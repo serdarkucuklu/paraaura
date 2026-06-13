@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParaAura | Anlık Döviz, Altın ve Kripto Kurları</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="ParaAura - Döviz kurları, Kapalıçarşı canlı altın fiyatları, gümüş kurları ve kripto paraların anlık verilerini sunan minimalist finans paneli.">
+    <meta name="keywords" content="döviz kurları, canlı altın, kapalıçarşı gram altın, gümüş fiyatları, bitcoin, ethereum, kripto canlı, finans paneli">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background Blur Decorative Gradients -->
+    <div class="gradient-bg">
+        <div class="g1"></div>
+        <div class="g2"></div>
+    </div>
+
+    <header>
+        <div class="header-container">
+            <h1 class="logo">P A R A <span class="accent">A U R A</span></h1>
+            <p class="tagline">Zihnini sadeleştir, değerini koru</p>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- Grid 1: Döviz Kurları -->
+        <section class="rate-column">
+            <div class="glass-card">
+                <h3 class="section-title"><i class="fa-solid fa-dollar-sign"></i> Döviz Kurları</h3>
+                <p class="section-subtitle">Serbest Piyasa Canlı Döviz Fiyatları</p>
+                <div class="rates-list" id="currency-list">
+                    <div class="rate-item-placeholder">Döviz kurları yükleniyor...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Grid 2: Altın & Gümüş -->
+        <section class="rate-column">
+            <div class="glass-card">
+                <h3 class="section-title"><i class="fa-solid fa-coins"></i> Altın & Gümüş</h3>
+                <p class="section-subtitle">Kapalıçarşı Fiziki Fiyatları & Ons</p>
+                <div class="rates-list" id="metal-list">
+                    <div class="rate-item-placeholder">Altın fiyatları yükleniyor...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Grid 3: Kripto Paralar -->
+        <section class="rate-column">
+            <div class="glass-card">
+                <h3 class="section-title"><i class="fa-brands fa-bitcoin"></i> Kripto Paralar</h3>
+                <p class="section-subtitle">Binance Canlı Kripto Kurları</p>
+                <div class="rates-list" id="crypto-list">
+                    <div class="rate-item-placeholder">Kripto fiyatları yükleniyor...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Section: Ads & Last Update -->
+    <div class="bottom-container">
+        <!-- Google AdSense Sponsored Card -->
+        <div class="glass-card ad-card">
+            <span class="ad-badge">S P O N S O R L U   A L A N</span>
+            <div class="ad-placeholder">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                     data-ad-slot="1234567890"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+                <div class="ad-fallback-text"><i class="fa-solid fa-rectangle-ad"></i> Reklam Alanı (AdSense Onayı Sonrası Aktifleşir)</div>
+            </div>
+        </div>
+        
+        <p class="update-time" id="update-time-text">Veriler güncelleniyor...</p>
+    </div>
+
+    <footer>
+        <div class="footer-container">
+            <p>&copy; 2026 ParaAura. Zihnini sadeleştir, değerini koru.</p>
+            <p class="privacy-note">Canlı piyasa bilgileri, serbest piyasa ve Kapalıçarşı kurları.</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

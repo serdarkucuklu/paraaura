@@ -1,0 +1,35 @@
+{
+  "metals": [
+    {
+      "name": "Gram Altın",
+      "code": "Gram",
+      "price": "6277.08",
+      "change": 0.0
+    },
+    {
+      "name": "Kapalı Çarşı Gram Altın",
+      "code": "Fiziki",
+      "price": "6401.04",
+      "change": 0.0
+    },
+    {
+      "name": "Çeyrek Altın",
+      "code": "Çeyrek",
+      "price": "10459.00",
+      "change": 0.0
+    },
+    {
+      "name": "Ons Altın",
+      "code": "Ons/USD",
+      "price": "4219.57",
+      "change": 0.0
+    },
+    {
+      "name": "Gümüş Gram",
+      "code": "Gümüş",
+      "price": "101.24",
+      "change": 0.0
+    }
+  ],
+  "last_updated": "2026-06-13T18:53:32.684793Z"
+}
