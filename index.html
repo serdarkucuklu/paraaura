@@ -23,122 +23,140 @@
     <header>
         <div class="header-container">
             <h1 class="logo">P A R A <span class="accent">A U R A</span></h1>
-            <p class="tagline">Zihnini sadeleştir, değerini koru</p>
-            <div class="live-status-container">
-                <div class="live-status">
-                    <span class="live-dot"></span>
-                    <span id="live-status-text">Canlı Güncelleniyor</span>
-                </div>
-            </div>
         </div>
     </header>
 
-    <main class="main-container">
-        <!-- LEFT COLUMN: Search & Core Feeds -->
-        <section class="left-column">
-            <!-- Search Bar Card -->
-            <div class="glass-card search-card">
-                <div class="search-input-wrapper">
-                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" id="search-input" placeholder="Döviz, altın, platin veya kripto ara...">
-                </div>
+    <div class="app-layout-wrapper">
+        <!-- LEFT SKYSCRAPER COLUMN -->
+        <aside class="skyscraper-column left-skyscraper">
+            <div class="skyscraper-title"><i class="fa-solid fa-book-open"></i> Finans Kitaplığı</div>
+            <div class="skyscraper-items-container">
+                <a href="https://www.amazon.com.tr/s?k=zengin+baba+yoksul+baba&tag=aurafocus-21" target="_blank" rel="noopener" class="skyscraper-item">
+                    <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=150" alt="Zengin Baba Yoksul Baba" class="skyscraper-item-img">
+                    <div class="skyscraper-item-title">Zengin Baba Yoksul Baba</div>
+                    <div class="skyscraper-item-price">189 TL</div>
+                </a>
+                <a href="https://www.amazon.com.tr/s?k=babilin+en+zengin+adami&tag=aurafocus-21" target="_blank" rel="noopener" class="skyscraper-item">
+                    <img src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=150" alt="Babil'in En Zengin Adamı" class="skyscraper-item-img">
+                    <div class="skyscraper-item-title">Babil'in En Zengin Adamı</div>
+                    <div class="skyscraper-item-price">149 TL</div>
+                </a>
+                <a href="https://www.amazon.com.tr/s?k=akilli+yatirimci&tag=aurafocus-21" target="_blank" rel="noopener" class="skyscraper-item">
+                    <img src="https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=150" alt="Akıllı Yatırımcı" class="skyscraper-item-img">
+                    <div class="skyscraper-item-title">Akıllı Yatırımcı</div>
+                    <div class="skyscraper-item-price">329 TL</div>
+                </a>
+                <a href="https://www.amazon.com.tr/s?k=hizli+ve+yavas+dusunme&tag=aurafocus-21" target="_blank" rel="noopener" class="skyscraper-item">
+                    <img src="https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=150" alt="Hızlı ve Yavaş Düşünme" class="skyscraper-item-img">
+                    <div class="skyscraper-item-title">Hızlı ve Yavaş Düşünme</div>
+                    <div class="skyscraper-item-price">289 TL</div>
+                </a>
             </div>
+        </aside>
 
-            <!-- Döviz Kurları -->
-            <div class="glass-card">
-                <h3 class="section-title"><i class="fa-solid fa-dollar-sign"></i> Döviz Kurları</h3>
-                <p class="section-subtitle">Serbest Piyasa Canlı Döviz Fiyatları</p>
-                <div class="rates-list" id="currency-list">
-                    <div class="rate-item-placeholder">Döviz kurları yükleniyor...</div>
-                </div>
-            </div>
-
-            <!-- Altın, Gümüş & Platin -->
-            <div class="glass-card">
-                <h3 class="section-title"><i class="fa-solid fa-coins"></i> Altın, Gümüş & Platin</h3>
-                <p class="section-subtitle">Kapalıçarşı Fiziki Fiyatları & Ons</p>
-                <div class="rates-list" id="metal-list">
-                    <div class="rate-item-placeholder">Metal fiyatları yükleniyor...</div>
-                </div>
-            </div>
-
-            <!-- Kripto Paralar -->
-            <div class="glass-card">
-                <h3 class="section-title"><i class="fa-brands fa-bitcoin"></i> Kripto Paralar</h3>
-                <p class="section-subtitle">Canlı Kripto Kurları (TRY bazında)</p>
-                <div class="rates-list" id="crypto-list">
-                    <div class="rate-item-placeholder">Kripto fiyatları yükleniyor...</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- RIGHT COLUMN: Chart, Banks & Bookshelf -->
-        <section class="right-column">
-            <!-- Trend Chart Card -->
-            <div class="glass-card">
-                <div class="chart-header">
-                    <h3 class="section-title" id="chart-title"><i class="fa-solid fa-chart-line"></i> Gram Altın</h3>
-                    <div class="timeframe-selector">
-                        <button class="timeframe-btn" data-range="5dk">5 Dk</button>
-                        <button class="timeframe-btn" data-range="1s">Saatlik</button>
-                        <button class="timeframe-btn active" data-range="1g">Günlük</button>
-                        <button class="timeframe-btn" data-range="1h">Haftalık</button>
-                        <button class="timeframe-btn" data-range="1a">Aylık</button>
-                        <button class="timeframe-btn" data-range="10y">10 Yıllık</button>
+        <main class="main-container">
+            <!-- LEFT COLUMN: Search & Core Feeds -->
+            <section class="left-column">
+                <!-- Search Bar Card -->
+                <div class="glass-card search-card">
+                    <div class="search-input-wrapper">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="search-input" placeholder="Döviz, altın, platin veya kripto ara...">
                     </div>
                 </div>
-                <p class="section-subtitle" style="margin-top:-10px;">Eğilim Analizi (Varlık seçmek için soldaki tablodan üzerine tıklayabilirsiniz)</p>
-                <div class="chart-container">
-                    <canvas id="trend-chart"></canvas>
-                </div>
-            </div>
 
-            <!-- Banka Altın Kurları -->
-            <div class="glass-card">
-                <h3 class="section-title"><i class="fa-solid fa-building-columns"></i> Banka Altın Kurları</h3>
-                <p class="section-subtitle">Bankaların Gram Altın Alış / Satış Fiyatları</p>
-                <div class="bank-headers">
-                    <span>Banka</span>
-                    <span style="text-align: right;">Alış</span>
-                    <span style="text-align: right;">Satış</span>
+                <!-- Döviz Kurları -->
+                <div class="glass-card">
+                    <h3 class="section-title"><i class="fa-solid fa-dollar-sign"></i> Döviz Kurları</h3>
+                    <p class="section-subtitle">Serbest Piyasa Canlı Döviz Fiyatları</p>
+                    <div class="rates-list" id="currency-list">
+                        <div class="rate-item-placeholder">Döviz kurları yükleniyor...</div>
+                    </div>
                 </div>
-                <div class="rates-list" id="bank-list">
-                    <div class="rate-item-placeholder">Banka fiyatları yükleniyor...</div>
-                </div>
-            </div>
 
-            <!-- Amazon Affiliate Bookshelf Card -->
-            <div class="glass-card ad-card">
-                <span class="ad-badge">Y A T I R I M C I   K İ T A P L I Ğ I</span>
-                <div class="bookshelf-grid">
-                    <a href="https://www.amazon.com.tr/s?k=zengin+baba+yoksul+baba&tag=aurafocus-21" target="_blank" rel="noopener" class="book-item">
-                        <div class="book-icon"><i class="fa-solid fa-book-open"></i></div>
-                        <div class="book-info">
-                            <h4 class="book-title">Zengin Baba Yoksul Baba</h4>
-                            <p class="book-desc">Finansal okuryazarlık alanında çığır açan temel eser.</p>
-                            <span class="book-cta">Amazon'da Keşfet <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
-                        </div>
-                    </a>
-                    <a href="https://www.amazon.com.tr/s?k=babilin+en+zengin+adami&tag=aurafocus-21" target="_blank" rel="noopener" class="book-item">
-                        <div class="book-icon"><i class="fa-solid fa-coins"></i></div>
-                        <div class="book-info">
-                            <h4 class="book-title">Babil'in En Zengin Adamı</h4>
-                            <p class="book-desc">Antik Babil'den süzülen zamansız birikim ve bütçe sırları.</p>
-                            <span class="book-cta">Amazon'da Keşfet <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
-                        </div>
-                    </a>
-                    <a href="https://www.amazon.com.tr/s?k=akilli+yatirimci&tag=aurafocus-21" target="_blank" rel="noopener" class="book-item">
-                        <div class="book-icon"><i class="fa-solid fa-chart-line"></i></div>
-                        <div class="book-info">
-                            <h4 class="book-title">Akıllı Yatırımcı</h4>
-                            <p class="book-desc">Benjamin Graham'in klasikleşmiş değer yatırımı rehberi.</p>
-                            <span class="book-cta">Amazon'da Keşfet <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
-                        </div>
-                    </a>
+                <!-- Altın, Gümüş & Platin -->
+                <div class="glass-card">
+                    <h3 class="section-title"><i class="fa-solid fa-coins"></i> Altın, Gümüş & Platin</h3>
+                    <p class="section-subtitle">Kapalıçarşı Fiziki Fiyatları & Ons</p>
+                    <div class="rates-list" id="metal-list">
+                        <div class="rate-item-placeholder">Metal fiyatları yükleniyor...</div>
+                    </div>
                 </div>
+
+                <!-- Kripto Paralar -->
+                <div class="glass-card">
+                    <h3 class="section-title"><i class="fa-brands fa-bitcoin"></i> Kripto Paralar</h3>
+                    <p class="section-subtitle">Canlı Kripto Kurları (TRY bazında)</p>
+                    <div class="rates-list" id="crypto-list">
+                        <div class="rate-item-placeholder">Kripto fiyatları yükleniyor...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT COLUMN: Chart, Banks & Bookshelf -->
+            <section class="right-column">
+                <!-- Trend Chart Card -->
+                <div class="glass-card">
+                    <div class="chart-header">
+                        <h3 class="section-title" id="chart-title"><i class="fa-solid fa-chart-line"></i> Gram Altın</h3>
+                        <div class="timeframe-selector">
+                            <button class="timeframe-btn" data-range="5dk">5 Dk</button>
+                            <button class="timeframe-btn" data-range="1s">Saatlik</button>
+                            <button class="timeframe-btn active" data-range="1g">Günlük</button>
+                            <button class="timeframe-btn" data-range="1h">Haftalık</button>
+                            <button class="timeframe-btn" data-range="1a">Aylık</button>
+                            <button class="timeframe-btn" data-range="10y">10 Yıllık</button>
+                        </div>
+                    </div>
+                    <p class="section-subtitle" style="margin-top:-10px;">Eğilim Analizi (Varlık seçmek için soldaki tablodan üzerine tıklayabilirsiniz)</p>
+                    <div class="chart-container">
+                        <canvas id="trend-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Banka Altın Kurları -->
+                <div class="glass-card">
+                    <h3 class="section-title"><i class="fa-solid fa-building-columns"></i> Banka Altın Kurları</h3>
+                    <p class="section-subtitle">Bankaların Gram Altın Alış / Satış Fiyatları</p>
+                    <div class="bank-headers">
+                        <span>Banka</span>
+                        <span style="text-align: right;">Alış</span>
+                        <span style="text-align: right;">Satış</span>
+                    </div>
+                    <div class="rates-list" id="bank-list">
+                        <div class="rate-item-placeholder">Banka fiyatları yükleniyor...</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- RIGHT SKYSCRAPER COLUMN -->
+        <aside class="skyscraper-column right-skyscraper">
+            <div class="skyscraper-title"><i class="fa-solid fa-wallet"></i> Yatırım Araçları</div>
+            <div class="skyscraper-items-container">
+                <a href="https://www.amazon.com.tr/s?k=ledger+nano+s+plus&tag=aurafocus-21" target="_blank" rel="noopener" class="skyscraper-item">
+                    <img src="https://images.unsplash.com/photo-1621416894569-0f39ed31d247?w=150" alt="Kripto Cüzdan" class="skyscraper-item-img">
+                    <div class="skyscraper-item-title">Ledger Nano S Plus Kripto Cüzdan</div>
+                    <div class="skyscraper-item-price">2.199 TL</div>
+                </a>
+                <a href="https://www.amazon.com.tr/s?k=hassas+kuyumcu+terazisi&tag=aurafocus-21" target="_blank" rel="noopener" class="skyscraper-item">
+                    <img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=150" alt="Kuyumcu Terazisi" class="skyscraper-item-img">
+                    <div class="skyscraper-item-title">Hassas Kuyumcu Terazisi</div>
+                    <div class="skyscraper-item-price">299 TL</div>
+                </a>
+                <a href="https://www.amazon.com.tr/s?k=metal+kumbara&tag=aurafocus-21" target="_blank" rel="noopener" class="skyscraper-item">
+                    <img src="https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=150" alt="Metal Kumbara" class="skyscraper-item-img">
+                    <div class="skyscraper-item-title">Retro Kilitli Metal Kumbara</div>
+                    <div class="skyscraper-item-price">189 TL</div>
+                </a>
+                <a href="https://www.amazon.com.tr/s?k=altin+ayar+suyu&tag=aurafocus-21" target="_blank" rel="noopener" class="skyscraper-item">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Altın Ayar Suyu" class="skyscraper-item-img">
+                    <div class="skyscraper-item-title">Altın Ayar Suyu Test Kiti</div>
+                    <div class="skyscraper-item-price">349 TL</div>
+                </a>
             </div>
-        </section>
-    </main>
+        </aside>
+    </div>
 
     <div class="bottom-container">
         <p class="update-time" id="update-time-text">Veriler güncelleniyor...</p>
