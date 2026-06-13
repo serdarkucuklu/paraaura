@@ -3,95 +3,95 @@
     {
       "name": "Gram Altın",
       "code": "Gram",
-      "price": "2940.80",
-      "change": 0.15
+      "price": "2950.80",
+      "change": 0.35
     },
     {
       "name": "Kapalı Çarşı Gram Altın",
       "code": "Fiziki",
-      "price": "3010.50",
-      "change": 0.22
+      "price": "3020.10",
+      "change": 0.4
     },
     {
       "name": "Çeyrek Altın",
       "code": "Çeyrek",
-      "price": "4920.00",
-      "change": 0.18
+      "price": "4940.00",
+      "change": 0.4
     },
     {
       "name": "Ons Altın",
       "code": "Ons/USD",
-      "price": "2650.50",
-      "change": -0.05
+      "price": "2680.50",
+      "change": 0.45
     },
     {
       "name": "Gümüş Gram",
       "code": "Gümüş",
       "price": "34.80",
-      "change": 0.45
+      "change": 0.85
     },
     {
       "name": "Platin Gram",
       "code": "Platin",
-      "price": "1110.20",
-      "change": -0.12
+      "price": "1080.50",
+      "change": -0.15
     }
   ],
   "banks": [
     {
       "name": "Garanti BBVA",
-      "buy": "2855.20",
-      "sell": "3020.60",
-      "change": 0.1
+      "buy": "2905.20",
+      "sell": "3040.60",
+      "change": 0.35
     },
     {
       "name": "Akbank",
-      "buy": "2858.50",
-      "sell": "3018.40",
-      "change": 0.11
+      "buy": "2908.50",
+      "sell": "3038.40",
+      "change": 0.36
     },
     {
       "name": "Yapı Kredi",
-      "buy": "2852.90",
-      "sell": "3022.10",
-      "change": 0.09
+      "buy": "2902.90",
+      "sell": "3042.10",
+      "change": 0.34
     },
     {
       "name": "Ziraat Bankası",
-      "buy": "2865.00",
-      "sell": "3012.00",
-      "change": 0.08
+      "buy": "2915.00",
+      "sell": "3033.00",
+      "change": 0.35
     },
     {
       "name": "Vakıfbank",
-      "buy": "2862.20",
-      "sell": "3014.80",
-      "change": 0.08
+      "buy": "2914.20",
+      "sell": "3034.80",
+      "change": 0.35
     },
     {
       "name": "Halkbank",
-      "buy": "2860.50",
-      "sell": "3016.00",
-      "change": 0.08
+      "buy": "2913.50",
+      "sell": "3036.00",
+      "change": 0.35
     },
     {
       "name": "İş Bankası",
-      "buy": "2857.80",
-      "sell": "3019.50",
-      "change": 0.09
+      "buy": "2911.80",
+      "sell": "3039.50",
+      "change": 0.35
     },
     {
       "name": "QNB Finansbank",
-      "buy": "2850.50",
-      "sell": "3025.50",
-      "change": 0.1
+      "buy": "2909.50",
+      "sell": "3043.50",
+      "change": 0.35
     },
     {
       "name": "Kuveyt Türk",
-      "buy": "2878.00",
-      "sell": "2998.00",
-      "change": 0.07
+      "buy": "2922.00",
+      "sell": "3028.00",
+      "change": 0.32
     }
   ],
-  "last_updated": "2026-06-13T20:42:40.578283+00:00"
+  "last_updated": "2026-06-13T21:05:02.274758+00:00"
 }
