@@ -52,12 +52,23 @@ header {
 }
 
 .logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
     font-family: var(--font-serif);
     font-style: italic;
     font-weight: 600;
     font-size: 1.6rem;
     letter-spacing: 2px;
     color: var(--text-primary);
+}
+
+.logo-svg {
+    width: 28px;
+    height: 28px;
+    color: var(--accent-gold);
+    flex-shrink: 0;
 }
 
 .logo .accent {
