@@ -30,7 +30,7 @@ def call_gemini(prompt: str, use_search: bool = False):
         print("Error: Gemini API Key is missing in .env")
         return None
 
-    models = ["gemini-2.5-flash", "gemini-2.0-flash"]
+    models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-pro", "gemini-3.5-flash", "gemini-flash-latest"]
     payload = {
         "contents": [{"parts": [{"text": prompt}]}]
     }
@@ -57,11 +57,12 @@ def run_agent():
     print("  ParaAura Autonomous Agent: Fetching Localized Metal Rates")
     print("=" * 60)
 
-    # 1. Search Google for current Kapalıçarşı gold and silver rates
-    print("Searching Google for current Kapalıçarşı physical gold/silver prices...")
+    # 1. Search Google for current Kapalıçarşı gold, silver, platinum and bank rates
+    print("Searching Google for current Kapalıçarşı physical metal prices & bank kurlar...")
     search_prompt = (
         "Find the current physical Gram gold price in the Grand Bazaar (Kapalıçarşı alış satış fiyatı), "
-        "interbank Gram gold, Çeyrek gold, Ons gold, and physical Silver (Gümüş gram) prices in Turkish Liras (TRY) today."
+        "interbank Gram gold, Çeyrek gold, Ons gold, physical Silver (Gümüş gram), and physical Platinum (Platin gram) prices in TRY today. "
+        "Also find the gold retail buying and selling prices for major Turkish banks (specifically Garanti BBVA, Akbank, and Yapı Kredi) today."
     )
     
     search_results = "No search results available."
@@ -69,7 +70,7 @@ def run_agent():
         raw_res = call_gemini(search_prompt, use_search=True)
         if raw_res:
             search_results = raw_res
-            print("[OK] Grand Bazaar trends searched successfully.")
+            print("[OK] Grand Bazaar and bank trends searched successfully.")
     except Exception as e:
         print(f"Warning: Search grounding failed: {e}")
 
@@ -83,10 +84,15 @@ def run_agent():
     3. Çeyrek Altın (retail selling price)
     4. Ons Altın (gold ounce in USD)
     5. Gümüş Gram (silver gram price in TRY)
+    6. Platin Gram (platinum gram price in TRY)
+    7. Bank gold buying and selling rates for:
+       - Garanti BBVA
+       - Akbank
+       - Yapı Kredi
     
-    For each metal, calculate or search the estimated daily percentage change (e.g. 0.12 or -0.25).
+    For each metal and bank, calculate or search the estimated daily percentage change (e.g. 0.12 or -0.25).
     
-    Format the values clearly as numbers (e.g. "2480.50", "31.45").
+    Format all values clearly as numeric strings (e.g. "2480.50", "31.45"). For banks, provide both buy and sell prices.
     
     SEARCH TRENDS:
     {search_results}
@@ -95,35 +101,106 @@ def run_agent():
     {{
       "metals": [
         {{
-          "name": "Metal Name (in Turkish, e.g. 'Gram Altın', 'Kapalı Çarşı Gram Altın', 'Çeyrek Altın', 'Ons Altın', 'Gümüş Gram')",
-          "code": "Code label (e.g. 'Gram', 'Fiziki', 'Çeyrek', 'Ons/USD', 'Gümüş')",
-          "price": "Price string (numeric format like '2450.50' or '31.25')",
-          "change": Float percentage change (e.g., 0.15 or -0.10)
+          "name": "Gram Altın",
+          "code": "Gram",
+          "price": "2850.40",
+          "change": 0.15
+        }},
+        {{
+          "name": "Kapalı Çarşı Gram Altın",
+          "code": "Fiziki",
+          "price": "2910.50",
+          "change": 0.22
+        }},
+        {{
+          "name": "Çeyrek Altın",
+          "code": "Çeyrek",
+          "price": "4750.00",
+          "change": 0.18
+        }},
+        {{
+          "name": "Ons Altın",
+          "code": "Ons/USD",
+          "price": "2330.40",
+          "change": -0.05
+        }},
+        {{
+          "name": "Gümüş Gram",
+          "code": "Gümüş",
+          "price": "34.50",
+          "change": 0.45
+        }},
+        {{
+          "name": "Platin Gram",
+          "code": "Platin",
+          "price": "1045.20",
+          "change": -0.12
+        }}
+      ],
+      "banks": [
+        {{
+          "name": "Garanti BBVA",
+          "buy": "2810.20",
+          "sell": "2940.60",
+          "change": 0.10
+        }},
+        {{
+          "name": "Akbank",
+          "buy": "2812.50",
+          "sell": "2938.40",
+          "change": 0.11
+        }},
+        {{
+          "name": "Yapı Kredi",
+          "buy": "2808.90",
+          "sell": "2942.10",
+          "change": 0.09
         }}
       ]
     }}
     """
     
     raw_json = call_gemini(generator_prompt, use_search=False)
+    data = None
+    
     if not raw_json:
-        print("[FAIL] Gemini returned empty response. Aborting.")
-        return
-
-    # 3. Parse and save rates.json
-    try:
-        clean_json = raw_json.replace("```json", "").replace("```", "").strip()
-        data = json.loads(clean_json)
-        data["last_updated"] = datetime.datetime.utcnow().isoformat() + "Z"
+        print("[WARNING] Gemini returned empty response. Attempting fallback to existing rates.json...")
+        if os.path.exists("rates.json"):
+            try:
+                with open("rates.json", "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                print("[OK] Fallback to existing rates.json succeeded.")
+            except Exception as e:
+                print(f"[FAIL] Could not load existing rates.json: {e}")
         
-        # Save to file
+        if not data:
+            print("[FAIL] No fallback data available. Aborting.")
+            return
+    else:
+        # 3. Parse and save rates.json
+        try:
+            clean_json = raw_json.replace("```json", "").replace("```", "").strip()
+            data = json.loads(clean_json)
+        except Exception as e:
+            print(f"[WARNING] Error parsing Gemini JSON: {e}. Attempting fallback...")
+            if os.path.exists("rates.json"):
+                try:
+                    with open("rates.json", "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                    print("[OK] Fallback to existing rates.json succeeded.")
+                except Exception as ex:
+                    print(f"[FAIL] Fallback failed: {ex}")
+            if not data:
+                return
+
+    # Update timestamp and save
+    try:
+        data["last_updated"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
         with open("rates.json", "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
-            
         print("[OK] rates.json updated successfully.")
-        
     except Exception as e:
-        print(f"[FAIL] Error parsing Gemini JSON: {e}")
-        print("Raw response was:", raw_json[:300])
+        print(f"[FAIL] Error saving rates.json: {e}")
         return
 
     # 4. Trigger Notification

@@ -3,62 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ParaAura | Anlık Döviz, Altın ve Kripto Kurları</title>
+    <title>ParaAura | Anlık Döviz, Altın, Platin ve Kripto Kurları</title>
     <!-- SEO Meta Tags -->
-    <meta name="description" content="ParaAura - Döviz kurları, Kapalıçarşı canlı altın fiyatları, gümüş kurları ve kripto paraların anlık verilerini sunan minimalist finans paneli.">
-    <meta name="keywords" content="döviz kurları, canlı altın, kapalıçarşı gram altın, gümüş fiyatları, bitcoin, ethereum, kripto canlı, finans paneli">
+    <meta name="description" content="ParaAura - Döviz kurları, Kapalıçarşı canlı altın ve platin fiyatları, gümüş kurları ve banka makas aralıklarının anlık verilerini sunan minimalist finans paneli.">
+    <meta name="keywords" content="döviz kurları, canlı altın, kapalıçarşı gram altın, gümüş fiyatları, platin kurları, banka altın fiyatları, bitcoin, finans paneli">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Background Blur Decorative Gradients -->
-    <div class="gradient-bg">
-        <div class="g1"></div>
-        <div class="g2"></div>
-    </div>
-
     <header>
         <div class="header-container">
             <h1 class="logo">P A R A <span class="accent">A U R A</span></h1>
             <p class="tagline">Zihnini sadeleştir, değerini koru</p>
+            <div class="live-status-container">
+                <div class="live-status">
+                    <span class="live-dot"></span>
+                    <span id="live-status-text">Canlı Veri Bağlantısı Aktif (10s)</span>
+                </div>
+            </div>
         </div>
     </header>
 
     <main class="main-container">
-        <!-- Grid 1: Döviz Kurları -->
+        <!-- Interactive Chart Section (Span 3) -->
+        <section class="trend-section">
+            <div class="glass-card">
+                <h3 class="section-title" id="chart-title"><i class="fa-solid fa-chart-line"></i> Gram Altın Trend Analizi</h3>
+                <p class="section-subtitle">Seçilen varlığın son 7 günlük kur eğilimi (Grafik üzerine tıklayabilir veya aşağıdaki satırlardan varlık seçebilirsiniz)</p>
+                <div class="chart-container">
+                    <canvas id="trend-chart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Column 1: Döviz Kurları -->
         <section class="rate-column">
             <div class="glass-card">
                 <h3 class="section-title"><i class="fa-solid fa-dollar-sign"></i> Döviz Kurları</h3>
-                <p class="section-subtitle">Serbest Piyasa Canlı Döviz Fiyatları</p>
+                <p class="section-subtitle">Serbest Piyasa Anlık Döviz Fiyatları</p>
                 <div class="rates-list" id="currency-list">
                     <div class="rate-item-placeholder">Döviz kurları yükleniyor...</div>
                 </div>
             </div>
         </section>
 
-        <!-- Grid 2: Altın & Gümüş -->
+        <!-- Column 2: Altın, Gümüş & Platin -->
         <section class="rate-column">
             <div class="glass-card">
-                <h3 class="section-title"><i class="fa-solid fa-coins"></i> Altın & Gümüş</h3>
+                <h3 class="section-title"><i class="fa-solid fa-coins"></i> Altın, Gümüş & Platin</h3>
                 <p class="section-subtitle">Kapalıçarşı Fiziki Fiyatları & Ons</p>
                 <div class="rates-list" id="metal-list">
-                    <div class="rate-item-placeholder">Altın fiyatları yükleniyor...</div>
+                    <div class="rate-item-placeholder">Metal fiyatları yükleniyor...</div>
                 </div>
             </div>
         </section>
 
-        <!-- Grid 3: Kripto Paralar -->
+        <!-- Column 3: Banka Makas Fiyatları & Kripto -->
         <section class="rate-column">
+            <!-- Bank Spreads -->
+            <div class="glass-card">
+                <h3 class="section-title"><i class="fa-solid fa-building-columns"></i> Banka Altın Kurları</h3>
+                <p class="section-subtitle">Bankaların Gram Altın Alış / Satış Fiyatları</p>
+                <div class="bank-headers">
+                    <span>Banka</span>
+                    <span style="text-align: right;">Alış</span>
+                    <span style="text-align: right;">Satış</span>
+                </div>
+                <div class="rates-list" id="bank-list">
+                    <div class="rate-item-placeholder">Banka fiyatları yükleniyor...</div>
+                </div>
+            </div>
+
+            <!-- Cryptos -->
             <div class="glass-card">
                 <h3 class="section-title"><i class="fa-brands fa-bitcoin"></i> Kripto Paralar</h3>
-                <p class="section-subtitle">Binance Canlı Kripto Kurları</p>
+                <p class="section-subtitle">Canlı Kripto Kurları (TRY bazında)</p>
                 <div class="rates-list" id="crypto-list">
                     <div class="rate-item-placeholder">Kripto fiyatları yükleniyor...</div>
                 </div>
@@ -66,7 +94,7 @@
         </section>
     </main>
 
-    <!-- Bottom Section: Ads & Last Update -->
+    <!-- Bottom Section: Affiliate & Updates -->
     <div class="bottom-container">
         <!-- Amazon Affiliate Bookshelf Card -->
         <div class="glass-card ad-card">
@@ -105,7 +133,7 @@
     <footer>
         <div class="footer-container">
             <p>&copy; 2026 ParaAura. Zihnini sadeleştir, değerini koru.</p>
-            <p class="privacy-note">Canlı piyasa bilgileri, serbest piyasa ve Kapalıçarşı kurları.</p>
+            <p class="privacy-note">Canlı piyasa bilgileri, serbest piyasa, banka makas aralıkları ve Kapalıçarşı fiziki kurları.</p>
         </div>
     </footer>
 
