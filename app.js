@@ -11,7 +11,7 @@ const searchInput = document.getElementById('search-input');
 const prevRates = {};
 let activeAsset = 'Gram Altın';
 let activeAssetPrice = 2860.20;
-let activeTimeframe = '1G'; // '5D', '1G', '1H', '1A', '1Y'
+let activeTimeframe = '1g'; // '5dk', '1s', '1g', '1h', '1a', '10y'
 let trendChartInstance = null;
 
 // Real-time tick data cache for '5D' timeframe (accrues ticks since page load)
@@ -44,46 +44,68 @@ function applyFlash(elementId, newPrice, currentElement) {
 }
 
 // Helper: Generate trend points based on timeframe
+// Seeded pseudo-random number generator for stable historical charts
+function seededRandom(seedString) {
+    let hash = 0;
+    for (let i = 0; i < seedString.length; i++) {
+        hash = seedString.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return function() {
+        const x = Math.sin(hash++) * 10000;
+        return x - Math.floor(x);
+    };
+}
+
+// Helper: Generate trend points based on timeframe
 function generateTimeframeData(basePrice, timeframe) {
     const labels = [];
     const points = [];
     const now = new Date();
     
-    let count = 7;
-    let timeUnit = 'day';
+    // We want a seeded generator so historical data is stable and doesn't morph on every 10s tick.
+    const rng = seededRandom(activeAsset + '_' + timeframe);
     
-    if (timeframe === '5D') {
-        // Real-time 5-minute ticks (loaded or cached)
+    if (timeframe === '5dk') {
         if (!tickDataCache[activeAsset]) {
             tickDataCache[activeAsset] = [];
-            // Seed with 15 initial points
             let val = basePrice * 0.998;
-            for (let i = 0; i < 15; i++) {
-                val = val * (1 + (Math.random() - 0.5) * 0.001);
-                tickDataCache[activeAsset].push(parseFloat(val.toFixed(2)));
+            const initialRng = seededRandom(activeAsset + '_5dk_init');
+            for (let i = 19; i >= 0; i--) {
+                val = val * (1 + (initialRng() - 0.5) * 0.0008);
+                const tickTime = new Date(now.getTime() - i * 10000);
+                tickDataCache[activeAsset].push({
+                    time: tickTime.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                    price: parseFloat(val.toFixed(2))
+                });
             }
-            tickDataCache[activeAsset].push(basePrice);
+            tickDataCache[activeAsset][tickDataCache[activeAsset].length - 1].price = basePrice;
         }
         
         const cache = tickDataCache[activeAsset];
-        for (let i = 0; i < cache.length; i++) {
-            labels.push(`${i * 10}s`);
-        }
-        return { labels, points: cache };
+        return {
+            labels: cache.map(item => item.time),
+            points: cache.map(item => item.price)
+        };
     }
     
-    if (timeframe === '1G') {
-        count = 24; // 24 hours
+    let count = 30; // default for Günlük
+    let timeUnit = 'day';
+    
+    if (timeframe === '1s') { // Saatlik
+        count = 24;
         timeUnit = 'hour';
-    } else if (timeframe === '1H') {
-        count = 7; // 7 days
+    } else if (timeframe === '1g') { // Günlük
+        count = 30;
         timeUnit = 'day';
-    } else if (timeframe === '1A') {
-        count = 30; // 30 days
-        timeUnit = 'day';
-    } else if (timeframe === '1Y') {
-        count = 12; // 12 months
+    } else if (timeframe === '1h') { // Haftalık
+        count = 12;
+        timeUnit = 'week';
+    } else if (timeframe === '1a') { // Aylık
+        count = 12;
         timeUnit = 'month';
+    } else if (timeframe === '10y') { // 10 Yıllık
+        count = 10;
+        timeUnit = 'year';
     }
     
     for (let i = count - 1; i >= 0; i--) {
@@ -94,20 +116,26 @@ function generateTimeframeData(basePrice, timeframe) {
         } else if (timeUnit === 'day') {
             date.setDate(now.getDate() - i);
             labels.push(date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }));
+        } else if (timeUnit === 'week') {
+            date.setDate(now.getDate() - i * 7);
+            labels.push(date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }) + ' Hft');
         } else if (timeUnit === 'month') {
             date.setMonth(now.getMonth() - i);
-            labels.push(date.toLocaleDateString('tr-TR', { month: 'short' }));
+            labels.push(date.toLocaleDateString('tr-TR', { month: 'short', year: '2-digit' }));
+        } else if (timeUnit === 'year') {
+            date.setFullYear(now.getFullYear() - i);
+            labels.push(date.getFullYear().toString());
         }
     }
     
-    // Generate pseudo-random walk
-    let current = basePrice * (1 - (count * 0.002));
+    // Generate stable random walk using the seeded RNG
+    let current = basePrice * (1 - (count * 0.003));
     for (let i = 0; i < count; i++) {
         const pct = (i / (count - 1));
         const target = basePrice;
         const drift = (target - current) * (pct * 0.5);
-        const maxDev = timeframe === '1Y' ? 0.15 : (timeframe === '1A' ? 0.05 : 0.015);
-        const rand = (Math.random() - 0.5) * (basePrice * maxDev / count);
+        const maxDev = timeframe === '10y' ? 0.35 : (timeframe === '1a' ? 0.15 : (timeframe === '1h' ? 0.08 : 0.03));
+        const rand = (rng() - 0.5) * (basePrice * maxDev / count);
         current = current + drift + rand;
         points.push(parseFloat(current.toFixed(2)));
     }
@@ -456,14 +484,20 @@ async function updateFeeds() {
         fetchCryptos()
     ]);
     
-    // Append real-time tick if 5D timeframe is selected
-    if (activeTimeframe === '5D') {
+    // Append real-time tick if 5dk timeframe is selected
+    if (activeTimeframe === '5dk') {
         if (!tickDataCache[activeAsset]) {
-            tickDataCache[activeAsset] = [];
-        }
-        tickDataCache[activeAsset].push(activeAssetPrice);
-        if (tickDataCache[activeAsset].length > 30) {
-            tickDataCache[activeAsset].shift(); // keep last 30 ticks
+            // will be initialized in generateTimeframeData
+        } else {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            tickDataCache[activeAsset].push({
+                time: timeStr,
+                price: activeAssetPrice
+            });
+            if (tickDataCache[activeAsset].length > 30) {
+                tickDataCache[activeAsset].shift(); // keep last 30 ticks
+            }
         }
     }
     
