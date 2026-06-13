@@ -3,59 +3,59 @@
     {
       "name": "Gram Altın",
       "code": "Gram",
-      "price": "2860.20",
-      "change": 0.15
+      "price": "6249.03",
+      "change": 0.02
     },
     {
       "name": "Kapalı Çarşı Gram Altın",
       "code": "Fiziki",
-      "price": "2905.70",
-      "change": 0.2
+      "price": "6387.62",
+      "change": 0.03
     },
     {
       "name": "Çeyrek Altın",
       "code": "Çeyrek",
-      "price": "4765.00",
-      "change": 0.18
+      "price": "10446.97",
+      "change": -0.01
     },
     {
       "name": "Ons Altın",
       "code": "Ons/USD",
-      "price": "2335.50",
-      "change": -0.05
+      "price": "195216.98",
+      "change": 0.015
     },
     {
       "name": "Gümüş Gram",
       "code": "Gümüş",
-      "price": "34.80",
-      "change": 0.4
+      "price": "101.22",
+      "change": 0.005
     },
     {
       "name": "Platin Gram",
       "code": "Platin",
-      "price": "1050.10",
-      "change": -0.1
+      "price": "2562.00",
+      "change": -0.008
     }
   ],
   "banks": [
     {
       "name": "Garanti BBVA",
-      "buy": "2805.00",
-      "sell": "2945.00",
-      "change": 0.1
+      "buy": "6157.70",
+      "sell": "6588.60",
+      "change": 0.025
     },
     {
       "name": "Akbank",
-      "buy": "2807.50",
-      "sell": "2942.50",
-      "change": 0.11
+      "buy": "6108.58",
+      "sell": "6651.83",
+      "change": 0.032
     },
     {
       "name": "Yapı Kredi",
-      "buy": "2803.00",
-      "sell": "2947.00",
-      "change": 0.09
+      "buy": "6122.91",
+      "sell": "6574.76",
+      "change": 0.018
     }
   ],
-  "last_updated": "2026-06-13T20:02:35.479558Z"
+  "last_updated": "2026-06-13T20:03:49.122959+00:00"
 }
