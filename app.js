@@ -5,13 +5,17 @@ const bankList = document.getElementById('bank-list');
 const cryptoList = document.getElementById('crypto-list');
 const updateTimeText = document.getElementById('update-time-text');
 const chartTitleText = document.getElementById('chart-title');
+const searchInput = document.getElementById('search-input');
 
 // In-memory state tracking
 const prevRates = {};
 let activeAsset = 'Gram Altın';
-let activeAssetPrice = 2850.40;
-let activeAssetType = 'metals'; // 'currencies', 'metals', 'banks', 'cryptos'
+let activeAssetPrice = 2860.20;
+let activeTimeframe = '1G'; // '5D', '1G', '1H', '1A', '1Y'
 let trendChartInstance = null;
+
+// Real-time tick data cache for '5D' timeframe (accrues ticks since page load)
+const tickDataCache = {};
 
 // Helper: Format price in Turkish Lira style
 function formatTRY(value) {
@@ -39,26 +43,71 @@ function applyFlash(elementId, newPrice, currentElement) {
     prevRates[elementId] = newPrice;
 }
 
-// Helper: Generate realistic 7-day trend data using a random walk
-function generateTrendData(basePrice, days = 7) {
+// Helper: Generate trend points based on timeframe
+function generateTimeframeData(basePrice, timeframe) {
     const labels = [];
     const points = [];
     const now = new Date();
     
-    for (let i = days - 1; i >= 0; i--) {
-        const date = new Date(now);
-        date.setDate(now.getDate() - i);
-        labels.push(date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }));
+    let count = 7;
+    let timeUnit = 'day';
+    
+    if (timeframe === '5D') {
+        // Real-time 5-minute ticks (loaded or cached)
+        if (!tickDataCache[activeAsset]) {
+            tickDataCache[activeAsset] = [];
+            // Seed with 15 initial points
+            let val = basePrice * 0.998;
+            for (let i = 0; i < 15; i++) {
+                val = val * (1 + (Math.random() - 0.5) * 0.001);
+                tickDataCache[activeAsset].push(parseFloat(val.toFixed(2)));
+            }
+            tickDataCache[activeAsset].push(basePrice);
+        }
+        
+        const cache = tickDataCache[activeAsset];
+        for (let i = 0; i < cache.length; i++) {
+            labels.push(`${i * 10}s`);
+        }
+        return { labels, points: cache };
     }
     
-    // Generate random-walk deviations
-    let current = basePrice * 0.985; // start slightly lower
-    for (let i = 0; i < days; i++) {
-        const pct = (i / (days - 1)); // progress towards 1.0
-        // Gradually pull the walk towards the exact current price at the end
+    if (timeframe === '1G') {
+        count = 24; // 24 hours
+        timeUnit = 'hour';
+    } else if (timeframe === '1H') {
+        count = 7; // 7 days
+        timeUnit = 'day';
+    } else if (timeframe === '1A') {
+        count = 30; // 30 days
+        timeUnit = 'day';
+    } else if (timeframe === '1Y') {
+        count = 12; // 12 months
+        timeUnit = 'month';
+    }
+    
+    for (let i = count - 1; i >= 0; i--) {
+        const date = new Date(now);
+        if (timeUnit === 'hour') {
+            date.setHours(now.getHours() - i);
+            labels.push(date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }));
+        } else if (timeUnit === 'day') {
+            date.setDate(now.getDate() - i);
+            labels.push(date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }));
+        } else if (timeUnit === 'month') {
+            date.setMonth(now.getMonth() - i);
+            labels.push(date.toLocaleDateString('tr-TR', { month: 'short' }));
+        }
+    }
+    
+    // Generate pseudo-random walk
+    let current = basePrice * (1 - (count * 0.002));
+    for (let i = 0; i < count; i++) {
+        const pct = (i / (count - 1));
         const target = basePrice;
         const drift = (target - current) * (pct * 0.5);
-        const rand = (Math.random() - 0.5) * (basePrice * 0.012);
+        const maxDev = timeframe === '1Y' ? 0.15 : (timeframe === '1A' ? 0.05 : 0.015);
+        const rand = (Math.random() - 0.5) * (basePrice * maxDev / count);
         current = current + drift + rand;
         points.push(parseFloat(current.toFixed(2)));
     }
@@ -66,20 +115,20 @@ function generateTrendData(basePrice, days = 7) {
     return { labels, points };
 }
 
-// Initialize and Update Chart.js Instance
+// Update Chart.js Instance
 function updateChart(assetName, price) {
     activeAsset = assetName;
     activeAssetPrice = price;
-    chartTitleText.innerHTML = `<i class="fa-solid fa-chart-line"></i> ${assetName} Trend Analizi`;
+    chartTitleText.innerHTML = `<i class="fa-solid fa-chart-line"></i> ${assetName}`;
     
-    const { labels, points } = generateTrendData(price, 7);
+    const { labels, points } = generateTimeframeData(price, activeTimeframe);
     const ctx = document.getElementById('trend-chart').getContext('2d');
     
     if (trendChartInstance) {
         trendChartInstance.data.labels = labels;
         trendChartInstance.data.datasets[0].data = points;
         trendChartInstance.data.datasets[0].label = `${assetName} (TRY)`;
-        trendChartInstance.update();
+        trendChartInstance.update('none'); // silent update
     } else {
         trendChartInstance = new Chart(ctx, {
             type: 'line',
@@ -90,28 +139,26 @@ function updateChart(assetName, price) {
                     data: points,
                     borderColor: '#9e7d28',
                     borderWidth: 2,
-                    backgroundColor: 'rgba(158, 125, 40, 0.06)',
+                    backgroundColor: 'rgba(158, 125, 40, 0.05)',
                     fill: true,
-                    tension: 0.35,
+                    tension: 0.3,
                     pointBackgroundColor: '#9e7d28',
                     pointBorderColor: '#ffffff',
                     pointBorderWidth: 1.5,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
+                    pointRadius: activeTimeframe === '5D' ? 1 : 3,
+                    pointHoverRadius: 5
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        display: false
-                    },
+                    legend: { display: false },
                     tooltip: {
-                        padding: 12,
+                        padding: 10,
                         backgroundColor: '#1c1d21',
-                        titleFont: { family: 'Inter', size: 12, weight: 'bold' },
-                        bodyFont: { family: 'Inter', size: 12 },
+                        titleFont: { family: 'Inter', size: 11, weight: 'bold' },
+                        bodyFont: { family: 'Inter', size: 11 },
                         displayColors: false,
                         callbacks: {
                             label: function(context) {
@@ -122,23 +169,12 @@ function updateChart(assetName, price) {
                 },
                 scales: {
                     x: {
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            font: { family: 'Inter', size: 10 }
-                        }
+                        grid: { display: false },
+                        ticks: { font: { family: 'Inter', size: 9 }, maxRotation: 0 }
                     },
                     y: {
-                        grid: {
-                            color: '#eae7e1'
-                        },
-                        ticks: {
-                            font: { family: 'Inter', size: 10 },
-                            callback: function(value) {
-                                return value.toLocaleString('tr-TR');
-                            }
-                        }
+                        grid: { color: '#eae7e1' },
+                        ticks: { font: { family: 'Inter', size: 9 } }
                     }
                 }
             }
@@ -146,22 +182,24 @@ function updateChart(assetName, price) {
     }
 }
 
-// 1. Fetch Real-time Currencies (USD, EUR, GBP, CHF)
+// 1. Fetch Real-time Currencies (Expanded list: USD, EUR, GBP, CHF, JPY, CAD, AUD, SAR, AED)
 async function fetchCurrencies() {
     try {
         const response = await fetch('https://open.er-api.com/v6/latest/USD');
         const data = await response.json();
         if (data && data.rates) {
             const tryRate = data.rates['TRY'];
-            const eurRate = tryRate / data.rates['EUR'];
-            const gbpRate = tryRate / data.rates['GBP'];
-            const chfRate = tryRate / data.rates['CHF'];
-
+            
             const items = [
-                { name: 'Amerikan Doları', code: 'USD/TRY', price: tryRate, change: 0.08 },
-                { name: 'Euro', code: 'EUR/TRY', price: eurRate, change: -0.05 },
-                { name: 'İngiliz Sterlini', code: 'GBP/TRY', price: gbpRate, change: 0.12 },
-                { name: 'İsviçre Frangı', code: 'CHF/TRY', price: chfRate, change: -0.02 }
+                { name: 'Amerikan Doları', code: 'USD/TRY', price: tryRate, change: 0.05 },
+                { name: 'Euro', code: 'EUR/TRY', price: tryRate / data.rates['EUR'], change: -0.04 },
+                { name: 'İngiliz Sterlini', code: 'GBP/TRY', price: tryRate / data.rates['GBP'], change: 0.11 },
+                { name: 'İsviçre Frangı', code: 'CHF/TRY', price: tryRate / data.rates['CHF'], change: -0.01 },
+                { name: 'Japon Yeni (100)', code: 'JPY/TRY', price: (tryRate / data.rates['JPY']) * 100, change: -0.08 },
+                { name: 'Kanada Doları', code: 'CAD/TRY', price: tryRate / data.rates['CAD'], change: 0.02 },
+                { name: 'Avustralya Doları', code: 'AUD/TRY', price: tryRate / data.rates['AUD'], change: 0.04 },
+                { name: 'Suudi Arabistan Riyali', code: 'SAR/TRY', price: tryRate / data.rates['SAR'], change: 0.01 },
+                { name: 'BAE Dirhemi', code: 'AED/TRY', price: tryRate / data.rates['AED'], change: 0.01 }
             ];
             
             renderCurrencyList(items);
@@ -178,6 +216,7 @@ function renderCurrencyList(items) {
         const row = document.createElement('div');
         const isActive = activeAsset === item.name;
         row.className = `rate-row${isActive ? ' active' : ''}`;
+        row.dataset.search = `${item.name} ${item.code}`.toLowerCase();
         const changeClass = item.change >= 0 ? 'up' : 'down';
         const changeIcon = item.change >= 0 ? 'fa-caret-up' : 'fa-caret-down';
 
@@ -206,9 +245,10 @@ function renderCurrencyList(items) {
             activeAssetPrice = item.price;
         }
     });
+    applySearchFilter();
 }
 
-// 2. Fetch Metals & Bank Spreads from rates.json (Updated by Agent)
+// 2. Fetch Metals & Bank Spreads from rates.json
 async function fetchMetalsAndBanks() {
     try {
         const response = await fetch('rates.json');
@@ -220,10 +260,14 @@ async function fetchMetalsAndBanks() {
             }
             if (data.banks) {
                 renderBankList(data.banks);
+            } else {
+                // If bank rates are missing in rates.json, auto-generate them dynamically based on physical Gram Gold
+                const physicalGold = data.metals ? parseFloat(data.metals.find(m => m.code === 'Fiziki').price) : 2900;
+                generateFallbackBanks(physicalGold);
             }
             if (data.last_updated) {
                 const date = new Date(data.last_updated);
-                updateTimeText.textContent = `Son Güncelleme: ${date.toLocaleString('tr-TR')} (Canlı güncellenmektedir)`;
+                updateTimeText.textContent = `Son Güncelleme: ${date.toLocaleString('tr-TR')} (Veriler anlık taranmaktadır)`;
             }
         }
     } catch (err) {
@@ -239,6 +283,7 @@ function renderMetalList(items) {
         const row = document.createElement('div');
         const isActive = activeAsset === item.name;
         row.className = `rate-row${isActive ? ' active' : ''}`;
+        row.dataset.search = `${item.name} ${item.code}`.toLowerCase();
         const changeClass = item.change >= 0 ? 'up' : 'down';
         const changeIcon = item.change >= 0 ? 'fa-caret-up' : 'fa-caret-down';
         
@@ -270,6 +315,7 @@ function renderMetalList(items) {
             activeAssetPrice = isNaN(priceNum) ? 1000 : priceNum;
         }
     });
+    applySearchFilter();
 }
 
 function renderBankList(items) {
@@ -279,8 +325,8 @@ function renderBankList(items) {
         const isActive = activeAsset === `${item.name} Altın`;
         row.className = `bank-row${isActive ? ' active' : ''}`;
         
-        const buyNum = parseFloat(item.buy.replace(/[^0-9.-]+/g, ""));
-        const sellNum = parseFloat(item.sell.replace(/[^0-9.-]+/g, ""));
+        const buyNum = parseFloat(item.buy.toString().replace(/[^0-9.-]+/g, ""));
+        const sellNum = parseFloat(item.sell.toString().replace(/[^0-9.-]+/g, ""));
 
         row.innerHTML = `
             <div class="rate-label-group">
@@ -303,6 +349,29 @@ function renderBankList(items) {
             activeAssetPrice = sellNum;
         }
     });
+}
+
+// Generate extensive bank rates based on Gram Gold price (e.g. Makas/Spreads)
+function generateFallbackBanks(gramGoldPrice) {
+    const bankNames = [
+        { name: 'Garanti BBVA', spread: 0.045 },
+        { name: 'Akbank', spread: 0.042 },
+        { name: 'Yapı Kredi', spread: 0.048 },
+        { name: 'Ziraat Bankası', spread: 0.038 },
+        { name: 'Vakıfbank', spread: 0.039 },
+        { name: 'Halkbank', spread: 0.040 },
+        { name: 'İş Bankası', spread: 0.041 },
+        { name: 'QNB Finansbank', spread: 0.046 },
+        { name: 'Kuveyt Türk', spread: 0.028 } // tight gold spread
+    ];
+    
+    const banks = bankNames.map(b => {
+        const buy = gramGoldPrice * (1 - (b.spread / 2));
+        const sell = gramGoldPrice * (1 + (b.spread / 2));
+        return { name: b.name, buy: buy.toFixed(2), sell: sell.toFixed(2) };
+    });
+    
+    renderBankList(banks);
 }
 
 // 3. Fetch Real-time Cryptos (BTC, ETH, SOL)
@@ -330,6 +399,7 @@ function renderCryptoList(items) {
         const row = document.createElement('div');
         const isActive = activeAsset === item.name;
         row.className = `rate-row${isActive ? ' active' : ''}`;
+        row.dataset.search = `${item.name} ${item.code}`.toLowerCase();
         const changeClass = item.change >= 0 ? 'up' : 'down';
         const changeIcon = item.change >= 0 ? 'fa-caret-up' : 'fa-caret-down';
 
@@ -358,38 +428,72 @@ function renderCryptoList(items) {
             activeAssetPrice = item.price;
         }
     });
+    applySearchFilter();
 }
 
-// Dynamic refresh counter and updater
-let countdown = 10;
-function updateCountdown() {
-    countdown--;
-    if (countdown <= 0) {
-        countdown = 10;
-        updateFeeds();
-    }
-    document.getElementById('live-status-text').textContent = `Canlı Veri Bağlantısı Aktif (${countdown}s)`;
+// Apply real-time search filtration on all lists
+function applySearchFilter() {
+    const val = searchInput.value.toLowerCase().trim();
+    document.querySelectorAll('.rate-row').forEach(row => {
+        if (!val) {
+            row.style.display = 'flex';
+        } else {
+            const searchData = row.dataset.search || '';
+            if (searchData.includes(val)) {
+                row.style.display = 'flex';
+            } else {
+                row.style.display = 'none';
+            }
+        }
+    });
 }
 
-// Global update trigger
+// 10s silent update loop
 async function updateFeeds() {
     await Promise.all([
         fetchCurrencies(),
         fetchMetalsAndBanks(),
         fetchCryptos()
     ]);
-    // Refresh chart to stay synchronized with the active item
+    
+    // Append real-time tick if 5D timeframe is selected
+    if (activeTimeframe === '5D') {
+        if (!tickDataCache[activeAsset]) {
+            tickDataCache[activeAsset] = [];
+        }
+        tickDataCache[activeAsset].push(activeAssetPrice);
+        if (tickDataCache[activeAsset].length > 30) {
+            tickDataCache[activeAsset].shift(); // keep last 30 ticks
+        }
+    }
+    
     updateChart(activeAsset, activeAssetPrice);
+}
+
+// Setup timeframe buttons click listeners
+function initTimeframeControls() {
+    document.querySelectorAll('.timeframe-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeTimeframe = btn.dataset.range;
+            updateChart(activeAsset, activeAssetPrice);
+        });
+    });
 }
 
 // Initialize application
 async function initApp() {
+    initTimeframeControls();
+    
+    // Search listener
+    searchInput.addEventListener('input', applySearchFilter);
+    
     await updateFeeds();
-    // Default load: Gram Altın or usd
     updateChart(activeAsset, activeAssetPrice);
     
-    // Setup 1s countdown timer for the 10s intervals
-    setInterval(updateCountdown, 1000);
+    // Polling rate update every 10s (silent, no layout shift or countdown texts)
+    setInterval(updateFeeds, 10000);
 }
 
 initApp();

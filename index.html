@@ -27,37 +27,33 @@
             <div class="live-status-container">
                 <div class="live-status">
                     <span class="live-dot"></span>
-                    <span id="live-status-text">Canlı Veri Bağlantısı Aktif (10s)</span>
+                    <span id="live-status-text">Canlı Güncelleniyor</span>
                 </div>
             </div>
         </div>
     </header>
 
     <main class="main-container">
-        <!-- Interactive Chart Section (Span 3) -->
-        <section class="trend-section">
-            <div class="glass-card">
-                <h3 class="section-title" id="chart-title"><i class="fa-solid fa-chart-line"></i> Gram Altın Trend Analizi</h3>
-                <p class="section-subtitle">Seçilen varlığın son 7 günlük kur eğilimi (Grafik üzerine tıklayabilir veya aşağıdaki satırlardan varlık seçebilirsiniz)</p>
-                <div class="chart-container">
-                    <canvas id="trend-chart"></canvas>
+        <!-- LEFT COLUMN: Search & Core Feeds -->
+        <section class="left-column">
+            <!-- Search Bar Card -->
+            <div class="glass-card search-card">
+                <div class="search-input-wrapper">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="search-input" placeholder="Döviz, altın, platin veya kripto ara...">
                 </div>
             </div>
-        </section>
 
-        <!-- Column 1: Döviz Kurları -->
-        <section class="rate-column">
+            <!-- Döviz Kurları -->
             <div class="glass-card">
                 <h3 class="section-title"><i class="fa-solid fa-dollar-sign"></i> Döviz Kurları</h3>
-                <p class="section-subtitle">Serbest Piyasa Anlık Döviz Fiyatları</p>
+                <p class="section-subtitle">Serbest Piyasa Canlı Döviz Fiyatları</p>
                 <div class="rates-list" id="currency-list">
                     <div class="rate-item-placeholder">Döviz kurları yükleniyor...</div>
                 </div>
             </div>
-        </section>
 
-        <!-- Column 2: Altın, Gümüş & Platin -->
-        <section class="rate-column">
+            <!-- Altın, Gümüş & Platin -->
             <div class="glass-card">
                 <h3 class="section-title"><i class="fa-solid fa-coins"></i> Altın, Gümüş & Platin</h3>
                 <p class="section-subtitle">Kapalıçarşı Fiziki Fiyatları & Ons</p>
@@ -65,11 +61,38 @@
                     <div class="rate-item-placeholder">Metal fiyatları yükleniyor...</div>
                 </div>
             </div>
+
+            <!-- Kripto Paralar -->
+            <div class="glass-card">
+                <h3 class="section-title"><i class="fa-brands fa-bitcoin"></i> Kripto Paralar</h3>
+                <p class="section-subtitle">Canlı Kripto Kurları (TRY bazında)</p>
+                <div class="rates-list" id="crypto-list">
+                    <div class="rate-item-placeholder">Kripto fiyatları yükleniyor...</div>
+                </div>
+            </div>
         </section>
 
-        <!-- Column 3: Banka Makas Fiyatları & Kripto -->
-        <section class="rate-column">
-            <!-- Bank Spreads -->
+        <!-- RIGHT COLUMN: Chart, Banks & Bookshelf -->
+        <section class="right-column">
+            <!-- Trend Chart Card -->
+            <div class="glass-card">
+                <div class="chart-header">
+                    <h3 class="section-title" id="chart-title"><i class="fa-solid fa-chart-line"></i> Gram Altın</h3>
+                    <div class="timeframe-selector">
+                        <button class="timeframe-btn" data-range="5D">5D</button>
+                        <button class="timeframe-btn active" data-range="1G">1G</button>
+                        <button class="timeframe-btn" data-range="1H">1H</button>
+                        <button class="timeframe-btn" data-range="1A">1A</button>
+                        <button class="timeframe-btn" data-range="1Y">1Y</button>
+                    </div>
+                </div>
+                <p class="section-subtitle" style="margin-top:-10px;">Eğilim Analizi (Varlık seçmek için soldaki tablodan üzerine tıklayabilirsiniz)</p>
+                <div class="chart-container">
+                    <canvas id="trend-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Banka Altın Kurları -->
             <div class="glass-card">
                 <h3 class="section-title"><i class="fa-solid fa-building-columns"></i> Banka Altın Kurları</h3>
                 <p class="section-subtitle">Bankaların Gram Altın Alış / Satış Fiyatları</p>
@@ -83,50 +106,40 @@
                 </div>
             </div>
 
-            <!-- Cryptos -->
-            <div class="glass-card">
-                <h3 class="section-title"><i class="fa-brands fa-bitcoin"></i> Kripto Paralar</h3>
-                <p class="section-subtitle">Canlı Kripto Kurları (TRY bazında)</p>
-                <div class="rates-list" id="crypto-list">
-                    <div class="rate-item-placeholder">Kripto fiyatları yükleniyor...</div>
+            <!-- Amazon Affiliate Bookshelf Card -->
+            <div class="glass-card ad-card">
+                <span class="ad-badge">Y A T I R I M C I   K İ T A P L I Ğ I</span>
+                <div class="bookshelf-grid">
+                    <a href="https://www.amazon.com.tr/s?k=zengin+baba+yoksul+baba&tag=aurafocus-21" target="_blank" rel="noopener" class="book-item">
+                        <div class="book-icon"><i class="fa-solid fa-book-open"></i></div>
+                        <div class="book-info">
+                            <h4 class="book-title">Zengin Baba Yoksul Baba</h4>
+                            <p class="book-desc">Finansal okuryazarlık alanında çığır açan temel eser.</p>
+                            <span class="book-cta">Amazon'da Keşfet <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+                        </div>
+                    </a>
+                    <a href="https://www.amazon.com.tr/s?k=babilin+en+zengin+adami&tag=aurafocus-21" target="_blank" rel="noopener" class="book-item">
+                        <div class="book-icon"><i class="fa-solid fa-coins"></i></div>
+                        <div class="book-info">
+                            <h4 class="book-title">Babil'in En Zengin Adamı</h4>
+                            <p class="book-desc">Antik Babil'den süzülen zamansız birikim ve bütçe sırları.</p>
+                            <span class="book-cta">Amazon'da Keşfet <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+                        </div>
+                    </a>
+                    <a href="https://www.amazon.com.tr/s?k=akilli+yatirimci&tag=aurafocus-21" target="_blank" rel="noopener" class="book-item">
+                        <div class="book-icon"><i class="fa-solid fa-chart-line"></i></div>
+                        <div class="book-info">
+                            <h4 class="book-title">Akıllı Yatırımcı</h4>
+                            <p class="book-desc">Benjamin Graham'in klasikleşmiş değer yatırımı rehberi.</p>
+                            <span class="book-cta">Amazon'da Keşfet <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+                        </div>
+                    </a>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Bottom Section: Affiliate & Updates -->
     <div class="bottom-container">
-        <!-- Amazon Affiliate Bookshelf Card -->
-        <div class="glass-card ad-card">
-            <span class="ad-badge">Y A T I R I M C I   K İ T A P L I Ğ I</span>
-            <div class="bookshelf-grid">
-                <a href="https://www.amazon.com.tr/s?k=zengin+baba+yoksul+baba&tag=aurafocus-21" target="_blank" rel="noopener" class="book-item">
-                    <div class="book-icon"><i class="fa-solid fa-book-open"></i></div>
-                    <div class="book-info">
-                        <h4 class="book-title">Zengin Baba Yoksul Baba</h4>
-                        <p class="book-desc">Finansal okuryazarlık alanında çığır açan temel eser.</p>
-                        <span class="book-cta">Amazon'da Keşfet <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
-                    </div>
-                </a>
-                <a href="https://www.amazon.com.tr/s?k=babilin+en+zengin+adami&tag=aurafocus-21" target="_blank" rel="noopener" class="book-item">
-                    <div class="book-icon"><i class="fa-solid fa-coins"></i></div>
-                    <div class="book-info">
-                        <h4 class="book-title">Babil'in En Zengin Adamı</h4>
-                        <p class="book-desc">Antik Babil'den süzülen zamansız birikim ve bütçe sırları.</p>
-                        <span class="book-cta">Amazon'da Keşfet <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
-                    </div>
-                </a>
-                <a href="https://www.amazon.com.tr/s?k=akilli+yatirimci&tag=aurafocus-21" target="_blank" rel="noopener" class="book-item">
-                    <div class="book-icon"><i class="fa-solid fa-chart-line"></i></div>
-                    <div class="book-info">
-                        <h4 class="book-title">Akıllı Yatırımcı</h4>
-                        <p class="book-desc">Benjamin Graham'in klasikleşmiş değer yatırımı rehberi.</p>
-                        <span class="book-cta">Amazon'da Keşfet <i class="fa-solid fa-arrow-up-right-from-square"></i></span>
-                    </div>
-                </a>
-            </div>
-        </div>
-        
         <p class="update-time" id="update-time-text">Veriler güncelleniyor...</p>
     </div>
 

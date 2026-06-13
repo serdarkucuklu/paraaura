@@ -155,6 +155,42 @@ def run_agent():
           "buy": "2808.90",
           "sell": "2942.10",
           "change": 0.09
+        }},
+        {{
+          "name": "Ziraat Bankası",
+          "buy": "2815.00",
+          "sell": "2933.00",
+          "change": 0.08
+        }},
+        {{
+          "name": "Vakıfbank",
+          "buy": "2814.20",
+          "sell": "2934.80",
+          "change": 0.08
+        }},
+        {{
+          "name": "Halkbank",
+          "buy": "2813.50",
+          "sell": "2936.00",
+          "change": 0.08
+        }},
+        {{
+          "name": "İş Bankası",
+          "buy": "2811.80",
+          "sell": "2939.50",
+          "change": 0.09
+        }},
+        {{
+          "name": "QNB Finansbank",
+          "buy": "2809.50",
+          "sell": "2943.50",
+          "change": 0.10
+        }},
+        {{
+          "name": "Kuveyt Türk",
+          "buy": "2820.00",
+          "sell": "2928.00",
+          "change": 0.07
         }}
       ]
     }}
