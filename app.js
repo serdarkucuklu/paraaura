@@ -9,6 +9,16 @@ const searchInput = document.getElementById('search-input');
 
 // In-memory state tracking
 const prevRates = {};
+const latestPrices = {
+    "Gram Altın": 2860.20,
+    "Çeyrek Altın": 4680.00,
+    "USD": 32.50,
+    "EUR": 34.80,
+    "Gümüş": 32.10,
+    "BTC": 2100000.00,
+    "ETH": 115000.00
+};
+const latestChanges = {};
 let activeAsset = 'Gram Altın';
 let activeAssetPrice = 2860.20;
 let activeTimeframe = '1g'; // '5dk', '1s', '1g', '1h', '1a', '10y'
@@ -241,6 +251,14 @@ async function fetchCurrencies() {
 function renderCurrencyList(items) {
     currencyList.innerHTML = '';
     items.forEach(item => {
+        if (item.code === 'USD/TRY') {
+            latestPrices['USD'] = item.price;
+            latestChanges['USD'] = item.change;
+        } else if (item.code === 'EUR/TRY') {
+            latestPrices['EUR'] = item.price;
+            latestChanges['EUR'] = item.change;
+        }
+        
         const row = document.createElement('div');
         const isActive = activeAsset === item.name;
         row.className = `rate-row${isActive ? ' active' : ''}`;
@@ -308,14 +326,18 @@ async function fetchMetalsAndBanks() {
 function renderMetalList(items) {
     metalList.innerHTML = '';
     items.forEach(item => {
+        const priceNum = parseFloat(item.price.replace(/[^0-9.-]+/g, ""));
+        if (!isNaN(priceNum)) {
+            latestPrices[item.name] = priceNum;
+            latestChanges[item.name] = item.change;
+        }
+        
         const row = document.createElement('div');
         const isActive = activeAsset === item.name;
         row.className = `rate-row${isActive ? ' active' : ''}`;
         row.dataset.search = `${item.name} ${item.code}`.toLowerCase();
         const changeClass = item.change >= 0 ? 'up' : 'down';
         const changeIcon = item.change >= 0 ? 'fa-caret-up' : 'fa-caret-down';
-        
-        const priceNum = parseFloat(item.price.replace(/[^0-9.-]+/g, ""));
         const displayPrice = isNaN(priceNum) ? item.price : formatTRY(priceNum);
 
         row.innerHTML = `
@@ -424,6 +446,14 @@ async function fetchCryptos() {
 function renderCryptoList(items) {
     cryptoList.innerHTML = '';
     items.forEach(item => {
+        if (item.name === 'Bitcoin') {
+            latestPrices['BTC'] = item.price;
+            latestChanges['BTC'] = item.change;
+        } else if (item.name === 'Ethereum') {
+            latestPrices['ETH'] = item.price;
+            latestChanges['ETH'] = item.change;
+        }
+        
         const row = document.createElement('div');
         const isActive = activeAsset === item.name;
         row.className = `rate-row${isActive ? ' active' : ''}`;
@@ -502,6 +532,7 @@ async function updateFeeds() {
     }
     
     updateChart(activeAsset, activeAssetPrice);
+    renderPortfolio();
 }
 
 // Setup timeframe buttons click listeners
@@ -516,15 +547,224 @@ function initTimeframeControls() {
     });
 }
 
+// Portfolio Management State
+let portfolio = {}; // format: { assetCode: amount }
+let portfolioChart = null;
+
+// Load from local storage
+function loadPortfolio() {
+    const saved = localStorage.getItem('portfolio');
+    if (saved) {
+        try {
+            portfolio = JSON.parse(saved);
+        } catch (e) {
+            portfolio = {};
+        }
+    }
+}
+
+// Save to local storage
+function savePortfolio() {
+    localStorage.setItem('portfolio', JSON.stringify(portfolio));
+}
+
+// Render Portfolio
+function renderPortfolio() {
+    const listContainer = document.getElementById('portfolio-items-list');
+    const contentDiv = document.getElementById('portfolio-content');
+    const emptyStateDiv = document.getElementById('portfolio-empty-state');
+    const totalValText = document.getElementById('portfolio-total-value');
+    const totalChangeText = document.getElementById('portfolio-total-change');
+    const aiInsightCard = document.getElementById('ai-insight-card');
+    const aiInsightText = document.getElementById('ai-insight-text');
+
+    if (!listContainer) return; // safety check
+
+    listContainer.innerHTML = '';
+    const assetKeys = Object.keys(portfolio);
+    
+    if (assetKeys.length === 0) {
+        contentDiv.style.display = 'none';
+        emptyStateDiv.style.display = 'block';
+        aiInsightCard.style.display = 'none';
+        return;
+    }
+
+    contentDiv.style.display = 'block';
+    emptyStateDiv.style.display = 'none';
+
+    let totalValue = 0;
+    let weightedChange = 0;
+    let chartLabels = [];
+    let chartValues = [];
+    let chartColors = ['#ffd075', '#8f8ba8', '#4ade80', '#f3a152', '#26d0ce', '#ff9ff3', '#ec4899'];
+
+    assetKeys.forEach((assetCode, index) => {
+        const amount = portfolio[assetCode];
+        const price = latestPrices[assetCode] || 0;
+        const change = latestChanges[assetCode] || 0;
+        const itemVal = amount * price;
+
+        totalValue += itemVal;
+        weightedChange += itemVal * change;
+
+        chartLabels.push(assetCode);
+        chartValues.push(parseFloat(itemVal.toFixed(2)));
+
+        const itemRow = document.createElement('div');
+        itemRow.className = 'portfolio-item';
+        
+        let displayName = assetCode;
+        if (assetCode === 'USD') displayName = 'Dolar';
+        if (assetCode === 'EUR') displayName = 'Euro';
+
+        itemRow.innerHTML = `
+            <div class="portfolio-item-info">
+                <span class="portfolio-item-name">${displayName}</span>
+                <span class="portfolio-item-amount">${amount} birim</span>
+            </div>
+            <div class="portfolio-item-value-block">
+                <span class="portfolio-item-val">${formatTRY(itemVal)}</span>
+                <button class="portfolio-item-delete" onclick="deletePortfolioItem('${assetCode}')">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        `;
+        listContainer.appendChild(itemRow);
+    });
+
+    totalValText.textContent = formatTRY(totalValue);
+    
+    const finalChange = totalValue > 0 ? (weightedChange / totalValue) : 0;
+    const changeClass = finalChange >= 0 ? 'up' : 'down';
+    const changeIcon = finalChange >= 0 ? '+' : '';
+    totalChangeText.textContent = `${changeIcon}${finalChange.toFixed(2)}%`;
+    totalChangeText.className = `stat-value ${changeClass}`;
+
+    // Update Pie Chart
+    updatePortfolioChart(chartLabels, chartValues, chartColors);
+
+    // AI Insights
+    aiInsightCard.style.display = 'block';
+    renderAIInsights(totalValue, finalChange);
+}
+
+// Update Chart.js Pie Chart
+function updatePortfolioChart(labels, data, colors) {
+    const chartEl = document.getElementById('portfolio-pie-chart');
+    if (!chartEl) return;
+    const ctx = chartEl.getContext('2d');
+    
+    if (portfolioChart) {
+        portfolioChart.destroy();
+    }
+
+    portfolioChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: colors.slice(0, labels.length),
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.1)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            cutout: '65%'
+        }
+    });
+}
+
+// Delete Item
+window.deletePortfolioItem = function(assetCode) {
+    delete portfolio[assetCode];
+    savePortfolio();
+    renderPortfolio();
+};
+
+// Add Item
+function addPortfolioItem() {
+    const select = document.getElementById('portfolio-asset-select');
+    const input = document.getElementById('portfolio-amount-input');
+    const assetCode = select.value;
+    const amount = parseFloat(input.value);
+
+    if (isNaN(amount) || amount <= 0) {
+        alert('Lütfen geçerli bir miktar giriniz.');
+        return;
+    }
+
+    if (portfolio[assetCode]) {
+        portfolio[assetCode] += amount;
+    } else {
+        portfolio[assetCode] = amount;
+    }
+
+    input.value = '';
+    savePortfolio();
+    renderPortfolio();
+}
+
+// Generate daily AI market commentary
+function renderAIInsights(totalValue, finalChange) {
+    const aiInsightText = document.getElementById('ai-insight-text');
+    if (!aiInsightText) return;
+    let commentary = "";
+
+    const assetKeys = Object.keys(portfolio);
+    if (assetKeys.length === 0) return;
+
+    const mainAsset = assetKeys.reduce((a, b) => {
+        const valA = (portfolio[a] || 0) * (latestPrices[a] || 0);
+        const valB = (portfolio[b] || 0) * (latestPrices[b] || 0);
+        return valA > valB ? a : b;
+    });
+
+    commentary += `Portföyünüzün toplam değeri <strong>${formatTRY(totalValue)}</strong> seviyesinde. `;
+    if (finalChange >= 0) {
+        commentary += `Bugün piyasalardaki hareketlilik varlıklarınıza <strong>+%${finalChange.toFixed(2)}</strong> oranında pozitif yansıdı. `;
+    } else {
+        commentary += `Bugün portföyünüzde <strong>-%${Math.abs(finalChange).toFixed(2)}</strong> oranında hafif bir geri çekilme gözlendi. `;
+    }
+
+    if (mainAsset === 'Gram Altın' || mainAsset === 'Çeyrek Altın') {
+        commentary += `Portföyünüzün ağırlıklı gücünü <strong>altın varlıklarınız</strong> oluşturuyor. Enflasyona karşı korumacı ve güvenli liman stratejiniz dengeli duruyor. `;
+    } else if (mainAsset === 'USD' || mainAsset === 'EUR') {
+        commentary += `Döviz ağırlıklı yapınız nedeniyle kurlardaki değişimler portföyünüzü doğrudan etkilemekte. Banka makas aralıklarına dikkat etmenizi öneririz. `;
+    } else if (mainAsset === 'BTC' || mainAsset === 'ETH') {
+        commentary += `Portföyünüzün öncüsü <strong>kripto para varlıkları</strong>. Yüksek getiri potansiyelinin yanında volatilite riskini azaltmak için diğer varlıklarla sepeti çeşitlendirmek faydalı olabilir. `;
+    }
+
+    commentary += `<br><br><i class="fa-solid fa-lightbulb" style="color: var(--accent-gold); margin-right: 6px;"></i> <strong>Altınım Önerisi:</strong> Altın ve gümüş kurlarındaki anlık Kapalıçarşı-banka makas farklarını inceleyerek fiziksel birikimlerinizi optimize edebilirsiniz.`;
+
+    aiInsightText.innerHTML = commentary;
+}
+
 // Initialize application
 async function initApp() {
     initTimeframeControls();
+    loadPortfolio();
+    
+    // Portfolio add item listener
+    const addBtn = document.getElementById('add-portfolio-item-btn');
+    if (addBtn) {
+        addBtn.addEventListener('click', addPortfolioItem);
+    }
     
     // Search listener
     searchInput.addEventListener('input', applySearchFilter);
     
     await updateFeeds();
     updateChart(activeAsset, activeAssetPrice);
+    renderPortfolio();
     
     // Polling rate update every 10s (silent, no layout shift or countdown texts)
     setInterval(updateFeeds, 10000);
