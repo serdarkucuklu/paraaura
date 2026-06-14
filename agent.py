@@ -65,142 +65,155 @@ def run_agent():
         "Also find the gold retail buying and selling prices for major Turkish banks (specifically Garanti BBVA, Akbank, and Yapı Kredi) today."
     )
     
-    search_results = "No search results available."
+    search_results = None
     try:
         raw_res = call_gemini(search_prompt, use_search=True)
         if raw_res:
             search_results = raw_res
             print("[OK] Grand Bazaar and bank trends searched successfully.")
+        else:
+            print("[WARNING] call_gemini returned empty search results.")
     except Exception as e:
         print(f"Warning: Search grounding failed: {e}")
 
-    # 2. Ask Gemini to compile into rates.json format
-    print("Formulating rates database via Gemini...")
-    generator_prompt = f"""
-    You are an expert financial analyst for ParaAura, a premium minimalist financial rates hub in Turkey.
-    Based on the following search trends, extract and compile:
-    1. Gram Altın (interbank rate)
-    2. Kapalı Çarşı Gram Altın (physical retail selling price in Grand Bazaar)
-    3. Çeyrek Altın (retail selling price)
-    4. Ons Altın (gold ounce in USD)
-    5. Gümüş Gram (silver gram price in TRY)
-    6. Platin Gram (platinum gram price in TRY)
-    7. Bank gold buying and selling rates for:
-       - Garanti BBVA
-       - Akbank
-       - Yapı Kredi
-    
-    For each metal and bank, calculate or search the estimated daily percentage change (e.g. 0.12 or -0.25).
-    
-    Format all values clearly as numeric strings (e.g. "2480.50", "31.45"). For banks, provide both buy and sell prices.
-    
-    SEARCH TRENDS:
-    {search_results}
-
-    Respond in STRICT JSON format (no markdown blocks, just raw JSON matching the schema below):
-    {{
-      "metals": [
-        {{
-          "name": "Gram Altın",
-          "code": "Gram",
-          "price": "2850.40",
-          "change": 0.15
-        }},
-        {{
-          "name": "Kapalı Çarşı Gram Altın",
-          "code": "Fiziki",
-          "price": "2910.50",
-          "change": 0.22
-        }},
-        {{
-          "name": "Çeyrek Altın",
-          "code": "Çeyrek",
-          "price": "4750.00",
-          "change": 0.18
-        }},
-        {{
-          "name": "Ons Altın",
-          "code": "Ons/USD",
-          "price": "2330.40",
-          "change": -0.05
-        }},
-        {{
-          "name": "Gümüş Gram",
-          "code": "Gümüş",
-          "price": "34.50",
-          "change": 0.45
-        }},
-        {{
-          "name": "Platin Gram",
-          "code": "Platin",
-          "price": "1045.20",
-          "change": -0.12
-        }}
-      ],
-      "banks": [
-        {{
-          "name": "Garanti BBVA",
-          "buy": "2810.20",
-          "sell": "2940.60",
-          "change": 0.10
-        }},
-        {{
-          "name": "Akbank",
-          "buy": "2812.50",
-          "sell": "2938.40",
-          "change": 0.11
-        }},
-        {{
-          "name": "Yapı Kredi",
-          "buy": "2808.90",
-          "sell": "2942.10",
-          "change": 0.09
-        }},
-        {{
-          "name": "Ziraat Bankası",
-          "buy": "2815.00",
-          "sell": "2933.00",
-          "change": 0.08
-        }},
-        {{
-          "name": "Vakıfbank",
-          "buy": "2814.20",
-          "sell": "2934.80",
-          "change": 0.08
-        }},
-        {{
-          "name": "Halkbank",
-          "buy": "2813.50",
-          "sell": "2936.00",
-          "change": 0.08
-        }},
-        {{
-          "name": "İş Bankası",
-          "buy": "2811.80",
-          "sell": "2939.50",
-          "change": 0.09
-        }},
-        {{
-          "name": "QNB Finansbank",
-          "buy": "2809.50",
-          "sell": "2943.50",
-          "change": 0.10
-        }},
-        {{
-          "name": "Kuveyt Türk",
-          "buy": "2820.00",
-          "sell": "2928.00",
-          "change": 0.07
-        }}
-      ]
-    }}
-    """
-    
-    raw_json = call_gemini(generator_prompt, use_search=False)
     data = None
-    
-    if not raw_json:
-        print("[WARNING] Gemini returned empty response. Attempting fallback to existing rates.json...")
+    if search_results:
+        # 2. Ask Gemini to compile into rates.json format
+        print("Formulating rates database via Gemini...")
+        generator_prompt = f"""
+        You are an expert financial analyst for ParaAura, a premium minimalist financial rates hub in Turkey.
+        Based on the following search trends, extract and compile:
+        1. Gram Altın (interbank rate)
+        2. Kapalı Çarşı Gram Altın (physical retail selling price in Grand Bazaar)
+        3. Çeyrek Altın (retail selling price)
+        4. Ons Altın (gold ounce in USD)
+        5. Gümüş Gram (silver gram price in TRY)
+        6. Platin Gram (platinum gram price in TRY)
+        7. Bank gold buying and selling rates for:
+           - Garanti BBVA
+           - Akbank
+           - Yapı Kredi
+        
+        For each metal and bank, calculate or search the estimated daily percentage change (e.g. 0.12 or -0.25).
+        
+        Format all values clearly as numeric strings (e.g. "2480.50", "31.45"). For banks, provide both buy and sell prices.
+        
+        SEARCH TRENDS:
+        {search_results}
+
+        Respond in STRICT JSON format (no markdown blocks, just raw JSON matching the schema below):
+        {{
+          "metals": [
+            {{
+              "name": "Gram Altın",
+              "code": "Gram",
+              "price": "2850.40",
+              "change": 0.15
+            }},
+            {{
+              "name": "Kapalı Çarşı Gram Altın",
+              "code": "Fiziki",
+              "price": "2910.50",
+              "change": 0.22
+            }},
+            {{
+              "name": "Çeyrek Altın",
+              "code": "Çeyrek",
+              "price": "4750.00",
+              "change": 0.18
+            }},
+            {{
+              "name": "Ons Altın",
+              "code": "Ons/USD",
+              "price": "2330.40",
+              "change": -0.05
+            }},
+            {{
+              "name": "Gümüş Gram",
+              "code": "Gümüş",
+              "price": "34.50",
+              "change": 0.45
+            }},
+            {{
+              "name": "Platin Gram",
+              "code": "Platin",
+              "price": "1045.20",
+              "change": -0.12
+            }}
+          ],
+          "banks": [
+            {{
+              "name": "Garanti BBVA",
+              "buy": "2810.20",
+              "sell": "2940.60",
+              "change": 0.10
+            }},
+            {{
+              "name": "Akbank",
+              "buy": "2812.50",
+              "sell": "2938.40",
+              "change": 0.11
+            }},
+            {{
+              "name": "Yapı Kredi",
+              "buy": "2808.90",
+              "sell": "2942.10",
+              "change": 0.09
+            }},
+            {{
+              "name": "Ziraat Bankası",
+              "buy": "2815.00",
+              "sell": "2933.00",
+              "change": 0.08
+            }},
+            {{
+              "name": "Vakıfbank",
+              "buy": "2814.20",
+              "sell": "2934.80",
+              "change": 0.08
+            }},
+            {{
+              "name": "Halkbank",
+              "buy": "2813.50",
+              "sell": "2936.00",
+              "change": 0.08
+            }},
+            {{
+              "name": "İş Bankası",
+              "buy": "2811.80",
+              "sell": "2939.50",
+              "change": 0.09
+            }},
+            {{
+              "name": "QNB Finansbank",
+              "buy": "2809.50",
+              "sell": "2943.50",
+              "change": 0.10
+            }},
+            {{
+              "name": "Kuveyt Türk",
+              "buy": "2820.00",
+              "sell": "2928.00",
+              "change": 0.07
+            }}
+          ]
+        }}
+        """
+        
+        raw_json = call_gemini(generator_prompt, use_search=False)
+        if raw_json:
+            try:
+                clean_json = raw_json.replace("```json", "").replace("```", "").strip()
+                data = json.loads(clean_json)
+            except Exception as e:
+                print(f"[WARNING] Error parsing Gemini JSON: {e}")
+        else:
+            print("[WARNING] Gemini returned empty response for generator prompt.")
+    else:
+        print("[WARNING] Skipping generation due to missing search results.")
+
+    if not data:
+        print("[WARNING] Attempting fallback to existing rates.json...")
         if os.path.exists("rates.json"):
             try:
                 with open("rates.json", "r", encoding="utf-8") as f:
@@ -212,22 +225,6 @@ def run_agent():
         if not data:
             print("[FAIL] No fallback data available. Aborting.")
             return
-    else:
-        # 3. Parse and save rates.json
-        try:
-            clean_json = raw_json.replace("```json", "").replace("```", "").strip()
-            data = json.loads(clean_json)
-        except Exception as e:
-            print(f"[WARNING] Error parsing Gemini JSON: {e}. Attempting fallback...")
-            if os.path.exists("rates.json"):
-                try:
-                    with open("rates.json", "r", encoding="utf-8") as f:
-                        data = json.load(f)
-                    print("[OK] Fallback to existing rates.json succeeded.")
-                except Exception as ex:
-                    print(f"[FAIL] Fallback failed: {ex}")
-            if not data:
-                return
 
     # Update timestamp and save
     try:

@@ -246,7 +246,9 @@ async function fetchCurrencies() {
         }
     } catch (err) {
         console.error("Error fetching currencies: ", err);
-        currencyList.innerHTML = '<div class="rate-item-placeholder">Döviz kurları yüklenemedi.</div>';
+        if (!currencyList.querySelector('.rate-row')) {
+            currencyList.innerHTML = '<div class="rate-item-placeholder">Döviz kurları yüklenemedi.</div>';
+        }
     }
 }
 
@@ -321,8 +323,12 @@ async function fetchMetalsAndBanks() {
         }
     } catch (err) {
         console.error("Error fetching metals/banks database: ", err);
-        metalList.innerHTML = '<div class="rate-item-placeholder">Metal fiyatları yüklenemedi.</div>';
-        bankList.innerHTML = '<div class="rate-item-placeholder">Banka kurları yüklenemedi.</div>';
+        if (!metalList.querySelector('.rate-row')) {
+            metalList.innerHTML = '<div class="rate-item-placeholder">Metal fiyatları yüklenemedi.</div>';
+        }
+        if (!bankList.querySelector('.bank-row')) {
+            bankList.innerHTML = '<div class="rate-item-placeholder">Banka kurları yüklenemedi.</div>';
+        }
     }
 }
 
@@ -444,7 +450,9 @@ async function fetchCryptos() {
         }
     } catch (err) {
         console.error("Error fetching cryptos: ", err);
-        cryptoList.innerHTML = '<div class="rate-item-placeholder">Kripto kurları yüklenemedi.</div>';
+        if (!cryptoList.querySelector('.rate-row')) {
+            cryptoList.innerHTML = '<div class="rate-item-placeholder">Kripto kurları yüklenemedi.</div>';
+        }
     }
 }
 
