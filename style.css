@@ -44,13 +44,13 @@ header {
 }
 
 .header-container {
-    max-width: 1200px;
+    max-width: 1610px;
     margin: 0 auto;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    gap: 15px;
+    gap: 20px;
     width: 100%;
 }
 
@@ -141,6 +141,8 @@ header {
     font-size: 1.6rem;
     letter-spacing: 2px;
     color: var(--text-primary);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .logo-svg {
