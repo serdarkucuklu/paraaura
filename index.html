@@ -3,12 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ParaAura | Anlık Döviz, Altın, Platin ve Kripto Kurları</title>
+    <title>ParaAura | Canlı Döviz, Kapalıçarşı Altın ve Banka Makas Aralıkları</title>
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239e7d28' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9' stroke-dasharray='3 3'/%3E%3Ccircle cx='12' cy='12' r='5'/%3E%3Cpath d='M12 2v2M12 20v2M2 12h2M20 12h2'/%3E%3C/svg%3E">
     <!-- SEO Meta Tags -->
-    <meta name="description" content="ParaAura - Döviz kurları, Kapalıçarşı canlı altın ve platin fiyatları, gümüş kurları ve banka makas aralıklarının anlık verilerini sunan minimalist finans paneli.">
-    <meta name="keywords" content="döviz kurları, canlı altın, kapalıçarşı gram altın, gümüş fiyatları, platin kurları, banka altın fiyatları, bitcoin, finans paneli">
+    <meta name="description" content="ParaAura - Canlı döviz kurları, anlık Kapalıçarşı fiziki altın fiyatları, gümüş kurları ve banka altın makas aralıklarını (makas farklarını) gösteren premium finans portalı.">
+    <meta name="keywords" content="banka altın makas aralığı, canlı altın fiyatları, kapalıçarşı altın, döviz kurları, canlı kur takibi, en uygun altın makası, bitcoin try, finans paneli, paraaura, kuraura">
+    <!-- Schema.org JSON-LD Structured Data for FAQ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+        "@type": "Question",
+        "name": "En düşük altın makas aralığı hangi bankadadır?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Bankaların altın alış-satış makas aralıkları piyasa koşullarına göre anlık olarak değişmektedir. Genellikle Kuveyt Türk gibi katılım bankaları dijital altın işlemlerinde daha dar ve uygun makas aralıkları sunmaktadır. Bankaların en güncel altın makas aralıklarını ve Kapalıçarşı fiziki altın fiyatlarını kuraura.com.tr adresi üzerinden anlık olarak takip edebilirsiniz."
+        }
+      }, {
+        "@type": "Question",
+        "name": "Kapalıçarşı fiziki gram altın fiyatı ile banka fiyatları arasındaki fark nedir?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Kapalıçarşı fiziki gram altın fiyatları fiziki arz-talebe göre belirlenirken, banka altın fiyatları Londra Ons fiyatı ve Dolar/TL kuruna dayalı olarak belirlenir. Bu nedenle Kapalıçarşı fiziki altın kurları ile bankaların dijital altın kurları arasında makas farkları oluşabilir."
+        }
+      }]
+    }
+    </script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -104,6 +126,10 @@
                     <p class="section-subtitle">Canlı Kripto Kurları (TRY bazında)</p>
                     <div class="rates-list" id="crypto-list">
                         <div class="rate-item-placeholder">Kripto fiyatları yükleniyor...</div>
+                    </div>
+                    <div class="affiliate-banner crypto-affiliate">
+                        <i class="fa-solid fa-percent banner-icon"></i>
+                        <span class="banner-text">Kripto alım-satım işlemlerinde %20 komisyon indirimi kazanmak için <a href="https://www.trbinance.com/account/signup?ref=REFERRAL_PLACEHOLDER" target="_blank" rel="noopener">Binance TR'ye Üye Olun</a>.</span>
                     </div>
                 </div>
             </section>
@@ -229,6 +255,10 @@
                     </div>
                     <div class="rates-list" id="bank-list">
                         <div class="rate-item-placeholder">Banka fiyatları yükleniyor...</div>
+                    </div>
+                    <div class="affiliate-banner bank-affiliate">
+                        <i class="fa-solid fa-wallet banner-icon"></i>
+                        <span class="banner-text">Altın işlemlerinde en düşük makas aralıkları için Kuveyt Türk veya Enpara dijital hesaplarını tercih edebilirsiniz.</span>
                     </div>
                 </div>
             </section>

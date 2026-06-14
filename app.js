@@ -597,6 +597,16 @@ async function updateFeeds() {
     renderPortfolio();
     checkAlarms();
     updateHeaderTickers();
+    updateDynamicTitle();
+}
+
+// Dynamic browser title tag updater for real-time SEO CTR
+function updateDynamicTitle() {
+    const gramGoldPrice = latestPrices['Gram Altın'];
+    const usdPrice = latestPrices['USD'];
+    if (gramGoldPrice && usdPrice) {
+        document.title = `Gram Altın: ${formatTRY(gramGoldPrice)} | Dolar: ${formatTRY(usdPrice)} | ParaAura`;
+    }
 }
 
 // Select asset by name across all lists and scroll to chart
