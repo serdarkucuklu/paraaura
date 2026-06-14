@@ -3,95 +3,59 @@
     {
       "name": "Gram Altın",
       "code": "Gram",
-      "price": "6069.56",
-      "change": 0.25
+      "price": "6274.76",
+      "change": 0.1
     },
     {
       "name": "Kapalı Çarşı Gram Altın",
       "code": "Fiziki",
-      "price": "6460.06",
-      "change": 0.31
+      "price": "6277.08",
+      "change": 0.12
     },
     {
       "name": "Çeyrek Altın",
       "code": "Çeyrek",
-      "price": "10180.00",
-      "change": 0.28
+      "price": "10329.90",
+      "change": 0.15
     },
     {
       "name": "Ons Altın",
       "code": "Ons/USD",
-      "price": "4223.92",
-      "change": -0.15
+      "price": "195145.08",
+      "change": -0.08
     },
     {
       "name": "Gümüş Gram",
       "code": "Gümüş",
-      "price": "101.35",
-      "change": -0.13
+      "price": "101.42",
+      "change": 0.2
     },
     {
       "name": "Platin Gram",
       "code": "Platin",
-      "price": "2558.68",
-      "change": -0.45
+      "price": "2611.94",
+      "change": -0.1
     }
   ],
   "banks": [
     {
       "name": "Garanti BBVA",
-      "buy": "6157.70",
-      "sell": "6588.60",
-      "change": 0.12
+      "buy": "6245.00",
+      "sell": "6335.00",
+      "change": 0.09
     },
     {
       "name": "Akbank",
-      "buy": "6108.58",
-      "sell": "6651.83",
-      "change": 0.15
+      "buy": "6240.00",
+      "sell": "6340.00",
+      "change": 0.1
     },
     {
       "name": "Yapı Kredi",
-      "buy": "6465.56",
-      "sell": "6673.64",
-      "change": 0.18
-    },
-    {
-      "name": "Ziraat Bankası",
-      "buy": "6120.00",
-      "sell": "6610.00",
-      "change": 0.14
-    },
-    {
-      "name": "Vakıfbank",
-      "buy": "6115.00",
-      "sell": "6615.00",
-      "change": 0.13
-    },
-    {
-      "name": "Halkbank",
-      "buy": "6110.00",
-      "sell": "6620.00",
-      "change": 0.13
-    },
-    {
-      "name": "İş Bankası",
-      "buy": "6145.00",
-      "sell": "6605.00",
-      "change": 0.15
-    },
-    {
-      "name": "QNB Finansbank",
-      "buy": "6095.00",
-      "sell": "6660.00",
-      "change": 0.16
-    },
-    {
-      "name": "Kuveyt Türk",
-      "buy": "6180.00",
-      "sell": "6590.00",
-      "change": 0.11
+      "buy": "6242.50",
+      "sell": "6337.50",
+      "change": 0.08
     }
   ],
-  "last_updated": "2026-06-14T16:50:15.928346+00:00"
+  "last_updated": "2026-06-14T18:02:20.516240+00:00"
 }
