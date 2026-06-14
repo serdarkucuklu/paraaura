@@ -86,7 +86,7 @@ def run_agent():
         1. Gram Altın (interbank rate)
         2. Kapalı Çarşı Gram Altın (physical retail selling price in Grand Bazaar)
         3. Çeyrek Altın (retail selling price)
-        4. Ons Altın (gold ounce in USD)
+        4. Ons Altın (gold ounce in USD - MUST be in US Dollars, typical value is between 1500 and 5000, e.g., "4220.00". DO NOT write the TRY equivalent!)
         5. Gümüş Gram (silver gram price in TRY)
         6. Platin Gram (platinum gram price in TRY)
         7. Bank gold buying and selling rates for:
