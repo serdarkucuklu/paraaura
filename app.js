@@ -6,6 +6,8 @@ const cryptoList = document.getElementById('crypto-list');
 const updateTimeText = document.getElementById('update-time-text');
 const chartTitleText = document.getElementById('chart-title');
 const searchInput = document.getElementById('search-input');
+const leftTickerContainer = document.getElementById('header-left-ticker');
+const rightTickerContainer = document.getElementById('header-right-ticker');
 
 // In-memory state tracking
 const prevRates = {};
@@ -538,6 +540,69 @@ async function updateFeeds() {
     updateChart(activeAsset, activeAssetPrice);
     renderPortfolio();
     checkAlarms();
+    updateHeaderTickers();
+}
+
+// Select asset by name across all lists and scroll to chart
+window.selectAssetByName = function(name) {
+    const rows = Array.from(document.querySelectorAll('.rate-row, .bank-row'));
+    const targetRow = rows.find(row => {
+        const nameEl = row.querySelector('.rate-name');
+        return nameEl && nameEl.textContent.trim().toLowerCase() === name.toLowerCase();
+    });
+    if (targetRow) {
+        targetRow.click();
+    } else {
+        // Fallback directly
+        const price = latestPrices[name];
+        if (price !== undefined) {
+            document.querySelectorAll('.rate-row, .bank-row').forEach(r => r.classList.remove('active'));
+            updateChart(name, price);
+            document.getElementById('trend-chart')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+};
+
+// Update left and right header tickers dynamically
+function updateHeaderTickers() {
+    if (!leftTickerContainer || !rightTickerContainer) return;
+    
+    const leftAssets = [
+        { label: 'ONS', name: 'Ons Altın', key: 'Ons Altın', format: val => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val) },
+        { label: 'USD', name: 'Amerikan Doları', key: 'USD', format: val => formatTRY(val) },
+        { label: 'EUR', name: 'Euro', key: 'EUR', format: val => formatTRY(val) }
+    ];
+    
+    const rightAssets = [
+        { label: 'GRAM', name: 'Gram Altın', key: 'Gram Altın', format: val => formatTRY(val) },
+        { label: 'ÇEYREK', name: 'Çeyrek Altın', key: 'Çeyrek Altın', format: val => formatTRY(val) },
+        { label: 'BTC', name: 'Bitcoin', key: 'BTC', format: val => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(val) }
+    ];
+    
+    const buildTickerHTML = (assets) => {
+        return assets.map(asset => {
+            const price = latestPrices[asset.key] || 0;
+            const change = latestChanges[asset.key] || 0;
+            
+            if (!price) return '';
+            
+            const changeClass = change >= 0 ? 'up' : 'down';
+            const changeIcon = change >= 0 ? 'fa-caret-up' : 'fa-caret-down';
+            
+            return `
+                <div class="ticker-badge" onclick="selectAssetByName('${asset.name}')">
+                    <span class="ticker-label">${asset.label}</span>
+                    <span class="ticker-val">${asset.format(price)}</span>
+                    <span class="ticker-pct ${changeClass}">
+                        <i class="fa-solid ${changeIcon}"></i> ${formatPercent(change)}
+                    </span>
+                </div>
+            `;
+        }).join('');
+    };
+    
+    leftTickerContainer.innerHTML = buildTickerHTML(leftAssets);
+    rightTickerContainer.innerHTML = buildTickerHTML(rightAssets);
 }
 
 // Setup timeframe buttons click listeners
