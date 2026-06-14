@@ -283,6 +283,7 @@ function renderCurrencyList(items) {
             document.querySelectorAll('.rate-row, .bank-row').forEach(r => r.classList.remove('active'));
             row.classList.add('active');
             updateChart(item.name, item.price);
+            document.getElementById('trend-chart')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
 
         currencyList.appendChild(row);
@@ -357,6 +358,7 @@ function renderMetalList(items) {
             document.querySelectorAll('.rate-row, .bank-row').forEach(r => r.classList.remove('active'));
             row.classList.add('active');
             updateChart(item.name, isNaN(priceNum) ? 1000 : priceNum);
+            document.getElementById('trend-chart')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
 
         metalList.appendChild(row);
@@ -391,6 +393,7 @@ function renderBankList(items) {
             document.querySelectorAll('.rate-row, .bank-row').forEach(r => r.classList.remove('active'));
             row.classList.add('active');
             updateChart(`${item.name} Altın`, sellNum);
+            document.getElementById('trend-chart')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
 
         bankList.appendChild(row);
@@ -478,6 +481,7 @@ function renderCryptoList(items) {
             document.querySelectorAll('.rate-row, .bank-row').forEach(r => r.classList.remove('active'));
             row.classList.add('active');
             updateChart(item.name, item.price);
+            document.getElementById('trend-chart')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
 
         cryptoList.appendChild(row);
