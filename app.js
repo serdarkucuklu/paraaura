@@ -155,6 +155,30 @@ function generateTimeframeData(basePrice, timeframe) {
     return { labels, points };
 }
 
+// Custom Chart.js Plugin for vertical crosshair line
+const verticalLinePlugin = {
+    id: 'verticalLine',
+    afterDraw: (chart) => {
+        if (chart.tooltip?._active?.length) {
+            const activePoint = chart.tooltip._active[0];
+            const ctx = chart.ctx;
+            const x = activePoint.element.x;
+            const topY = chart.scales.y.top;
+            const bottomY = chart.scales.y.bottom;
+            
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(x, topY);
+            ctx.lineTo(x, bottomY);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(158, 125, 40, 0.25)'; // gold line
+            ctx.setLineDash([4, 4]); // dashed line
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+};
+
 // Update Chart.js Instance
 function updateChart(assetName, price) {
     activeAsset = assetName;
@@ -168,6 +192,14 @@ function updateChart(assetName, price) {
         trendChartInstance.data.labels = labels;
         trendChartInstance.data.datasets[0].data = points;
         trendChartInstance.data.datasets[0].label = `${assetName} (TRY)`;
+        // Update gradient background dynamically on chart update
+        const chartArea = trendChartInstance.chartArea;
+        if (chartArea) {
+            const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+            gradient.addColorStop(0, 'rgba(158, 125, 40, 0.22)');
+            gradient.addColorStop(1, 'rgba(158, 125, 40, 0.00)');
+            trendChartInstance.data.datasets[0].backgroundColor = gradient;
+        }
         trendChartInstance.update('none'); // silent update
     } else {
         trendChartInstance = new Chart(ctx, {
@@ -179,26 +211,41 @@ function updateChart(assetName, price) {
                     data: points,
                     borderColor: '#9e7d28',
                     borderWidth: 2,
-                    backgroundColor: 'rgba(158, 125, 40, 0.05)',
+                    backgroundColor: function(context) {
+                        const chart = context.chart;
+                        const {ctx, chartArea} = chart;
+                        if (!chartArea) return 'rgba(158, 125, 40, 0.05)';
+                        const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                        gradient.addColorStop(0, 'rgba(158, 125, 40, 0.22)');
+                        gradient.addColorStop(1, 'rgba(158, 125, 40, 0.00)');
+                        return gradient;
+                    },
                     fill: true,
                     tension: 0.3,
                     pointBackgroundColor: '#9e7d28',
                     pointBorderColor: '#ffffff',
                     pointBorderWidth: 1.5,
-                    pointRadius: activeTimeframe === '5D' ? 1 : 3,
-                    pointHoverRadius: 5
+                    pointRadius: 0, // clean look, show only on hover
+                    pointHoverRadius: 6,
+                    pointHoverBackgroundColor: '#9e7d28',
+                    pointHoverBorderColor: '#ffffff',
+                    pointHoverBorderWidth: 2
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
                 plugins: {
                     legend: { display: false },
                     tooltip: {
-                        padding: 10,
+                        padding: 12,
                         backgroundColor: '#1c1d21',
                         titleFont: { family: 'Inter', size: 11, weight: 'bold' },
-                        bodyFont: { family: 'Inter', size: 11 },
+                        bodyFont: { family: 'Inter', size: 12 },
                         displayColors: false,
                         callbacks: {
                             label: function(context) {
@@ -217,7 +264,8 @@ function updateChart(assetName, price) {
                         ticks: { font: { family: 'Inter', size: 9 } }
                     }
                 }
-            }
+            },
+            plugins: [verticalLinePlugin]
         });
     }
 }
