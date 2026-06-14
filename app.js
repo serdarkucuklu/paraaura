@@ -533,6 +533,7 @@ async function updateFeeds() {
     
     updateChart(activeAsset, activeAssetPrice);
     renderPortfolio();
+    checkAlarms();
 }
 
 // Setup timeframe buttons click listeners
@@ -548,7 +549,7 @@ function initTimeframeControls() {
 }
 
 // Portfolio Management State
-let portfolio = {}; // format: { assetCode: amount }
+let portfolio = {}; // format: { assetCode: { amount: X, cost: Y } }
 let portfolioChart = null;
 
 // Load from local storage
@@ -556,7 +557,15 @@ function loadPortfolio() {
     const saved = localStorage.getItem('portfolio');
     if (saved) {
         try {
-            portfolio = JSON.parse(saved);
+            const raw = JSON.parse(saved);
+            portfolio = {};
+            for (const key in raw) {
+                if (raw[key] && typeof raw[key] === 'object' && 'amount' in raw[key]) {
+                    portfolio[key] = raw[key];
+                } else if (typeof raw[key] === 'number') {
+                    portfolio[key] = { amount: raw[key], cost: latestPrices[key] || 0 };
+                }
+            }
         } catch (e) {
             portfolio = {};
         }
@@ -574,11 +583,11 @@ function renderPortfolio() {
     const contentDiv = document.getElementById('portfolio-content');
     const emptyStateDiv = document.getElementById('portfolio-empty-state');
     const totalValText = document.getElementById('portfolio-total-value');
+    const totalPlText = document.getElementById('portfolio-total-pl');
     const totalChangeText = document.getElementById('portfolio-total-change');
     const aiInsightCard = document.getElementById('ai-insight-card');
-    const aiInsightText = document.getElementById('ai-insight-text');
 
-    if (!listContainer) return; // safety check
+    if (!listContainer) return;
 
     listContainer.innerHTML = '';
     const assetKeys = Object.keys(portfolio);
@@ -594,18 +603,26 @@ function renderPortfolio() {
     emptyStateDiv.style.display = 'none';
 
     let totalValue = 0;
+    let totalCost = 0;
     let weightedChange = 0;
     let chartLabels = [];
     let chartValues = [];
     let chartColors = ['#ffd075', '#8f8ba8', '#4ade80', '#f3a152', '#26d0ce', '#ff9ff3', '#ec4899'];
 
     assetKeys.forEach((assetCode, index) => {
-        const amount = portfolio[assetCode];
+        const itemData = portfolio[assetCode] || { amount: 0, cost: 0 };
+        const amount = itemData.amount || 0;
+        const cost = itemData.cost || 0;
         const price = latestPrices[assetCode] || 0;
         const change = latestChanges[assetCode] || 0;
+        
         const itemVal = amount * price;
+        const itemCost = amount * cost;
+        const itemPl = itemVal - itemCost;
+        const itemPlPct = cost > 0 ? ((price - cost) / cost) * 100 : 0;
 
         totalValue += itemVal;
+        totalCost += itemCost;
         weightedChange += itemVal * change;
 
         chartLabels.push(assetCode);
@@ -621,10 +638,15 @@ function renderPortfolio() {
         itemRow.innerHTML = `
             <div class="portfolio-item-info">
                 <span class="portfolio-item-name">${displayName}</span>
-                <span class="portfolio-item-amount">${amount} birim</span>
+                <span class="portfolio-item-amount">${amount} birim @ Maliyet: ${formatTRY(cost)}</span>
             </div>
             <div class="portfolio-item-value-block">
-                <span class="portfolio-item-val">${formatTRY(itemVal)}</span>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+                    <span class="portfolio-item-val">${formatTRY(itemVal)}</span>
+                    <span class="portfolio-item-pl ${itemPl >= 0 ? 'pl-up' : 'pl-down'}" style="font-size: 0.75rem; font-weight: 600;">
+                        ${itemPl >= 0 ? '▲' : '▼'} ${itemPl >= 0 ? '+' : ''}${itemPlPct.toFixed(2)}%
+                    </span>
+                </div>
                 <button class="portfolio-item-delete" onclick="deletePortfolioItem('${assetCode}')">
                     <i class="fa-solid fa-trash"></i>
                 </button>
@@ -635,8 +657,18 @@ function renderPortfolio() {
 
     totalValText.textContent = formatTRY(totalValue);
     
+    // Total profit loss
+    const netPl = totalValue - totalCost;
+    const netPlPct = totalCost > 0 ? (netPl / totalCost) * 100 : 0;
+    const plClass = netPl >= 0 ? 'pl-up' : 'pl-down';
+    const plSign = netPl >= 0 ? '+' : '';
+    if (totalPlText) {
+        totalPlText.textContent = `${plSign}${netPlPct.toFixed(2)}% (${formatTRY(netPl)})`;
+        totalPlText.className = `stat-value ${plClass}`;
+    }
+    
     const finalChange = totalValue > 0 ? (weightedChange / totalValue) : 0;
-    const changeClass = finalChange >= 0 ? 'up' : 'down';
+    const changeClass = finalChange >= 0 ? 'pl-up' : 'pl-down';
     const changeIcon = finalChange >= 0 ? '+' : '';
     totalChangeText.textContent = `${changeIcon}${finalChange.toFixed(2)}%`;
     totalChangeText.className = `stat-value ${changeClass}`;
@@ -694,8 +726,11 @@ window.deletePortfolioItem = function(assetCode) {
 function addPortfolioItem() {
     const select = document.getElementById('portfolio-asset-select');
     const input = document.getElementById('portfolio-amount-input');
+    const costInput = document.getElementById('portfolio-cost-input');
+    
     const assetCode = select.value;
     const amount = parseFloat(input.value);
+    const cost = parseFloat(costInput.value) || latestPrices[assetCode] || 0;
 
     if (isNaN(amount) || amount <= 0) {
         alert('Lütfen geçerli bir miktar giriniz.');
@@ -703,14 +738,152 @@ function addPortfolioItem() {
     }
 
     if (portfolio[assetCode]) {
-        portfolio[assetCode] += amount;
+        // Calculate new average cost
+        const existing = portfolio[assetCode];
+        const totalAmount = existing.amount + amount;
+        const totalCost = (existing.amount * existing.cost) + (amount * cost);
+        portfolio[assetCode] = {
+            amount: totalAmount,
+            cost: totalAmount > 0 ? (totalCost / totalAmount) : 0
+        };
     } else {
-        portfolio[assetCode] = amount;
+        portfolio[assetCode] = { amount: amount, cost: cost };
     }
 
     input.value = '';
+    costInput.value = '';
     savePortfolio();
     renderPortfolio();
+}
+
+// ─── PRICE ALARMS LOGIC ───────────────────────────────────────────────────
+let alarms = [];
+
+function loadAlarms() {
+    const saved = localStorage.getItem('price_alarms');
+    if (saved) {
+        try {
+            alarms = JSON.parse(saved);
+        } catch(e) {
+            alarms = [];
+        }
+    }
+}
+
+function saveAlarms() {
+    localStorage.setItem('price_alarms', JSON.stringify(alarms));
+}
+
+function renderAlarms() {
+    const alarmsList = document.getElementById('alarms-list');
+    if (!alarmsList) return;
+    
+    alarmsList.innerHTML = '';
+    if (alarms.length === 0) {
+        alarmsList.innerHTML = `<p style="color: var(--text-secondary); font-size: 0.8rem; text-align: center; padding: 10px 0;">Aktif fiyat alarmı bulunmamaktadır.</p>`;
+        return;
+    }
+    
+    alarms.forEach((alarm, index) => {
+        const itemRow = document.createElement('div');
+        itemRow.className = 'alarm-item';
+        
+        const condSymbol = alarm.condition === 'above' ? '≥' : '≤';
+        itemRow.innerHTML = `
+            <span class="alarm-item-text"><i class="fa-solid fa-bell"></i> ${alarm.assetCode} ${condSymbol} ${formatTRY(alarm.target)}</span>
+            <button class="alarm-delete" onclick="deleteAlarm(${index})">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        `;
+        alarmsList.appendChild(itemRow);
+    });
+}
+
+window.deleteAlarm = function(idx) {
+    alarms.splice(idx, 1);
+    saveAlarms();
+    renderAlarms();
+};
+
+function addAlarm() {
+    const assetSelect = document.getElementById('alarm-asset-select');
+    const conditionSelect = document.getElementById('alarm-condition-select');
+    const targetInput = document.getElementById('alarm-target-input');
+    
+    const assetCode = assetSelect.value;
+    const condition = conditionSelect.value;
+    const target = parseFloat(targetInput.value);
+    
+    if (isNaN(target) || target <= 0) {
+        alert('Lütfen geçerli bir hedef fiyat giriniz.');
+        return;
+    }
+    
+    // Request permission on setting alarm
+    if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+        Notification.requestPermission();
+    }
+    
+    alarms.push({ assetCode, condition, target });
+    saveAlarms();
+    renderAlarms();
+    
+    targetInput.value = '';
+    
+    // Show notification prompt confirmation
+    sendNotification('Alarm Kuruldu 🔔', `${assetCode} için ${condition === 'above' ? 'yükseliş' : 'düşüş'} yönlü ${target} ₺ fiyat alarmı kuruldu.`);
+}
+
+function checkAlarms() {
+    if (alarms.length === 0) return;
+    
+    let triggeredIndex = [];
+    
+    alarms.forEach((alarm, idx) => {
+        const price = latestPrices[alarm.assetCode];
+        if (!price) return;
+        
+        let isTriggered = false;
+        if (alarm.condition === 'above' && price >= alarm.target) {
+            isTriggered = true;
+        } else if (alarm.condition === 'below' && price <= alarm.target) {
+            isTriggered = true;
+        }
+        
+        if (isTriggered) {
+            sendNotification(
+                `Fiyat Alarmı Tetiklendi! ⚡`,
+                `${alarm.assetCode} değeri hedeflediğiniz ${alarm.target} ₺ seviyesine ulaştı! Güncel: ${price} ₺`
+            );
+            triggeredIndex.push(idx);
+        }
+    });
+    
+    if (triggeredIndex.length > 0) {
+        alarms = alarms.filter((_, idx) => !triggeredIndex.includes(idx));
+        saveAlarms();
+        renderAlarms();
+    }
+}
+
+function sendNotification(title, body) {
+    if (Notification.permission === 'granted') {
+        new Notification(title, { 
+            body: body,
+            icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%239e7d28"%3E%3Ccircle cx="12" cy="12" r="9"/%3E%3C/svg%3E'
+        });
+    }
+    
+    // Custom UI banner alert
+    const banner = document.createElement('div');
+    banner.className = 'custom-alert-banner';
+    banner.innerHTML = `<i class="fa-solid fa-bell"></i> <span><strong>${title}</strong>: ${body}</span>`;
+    document.body.appendChild(banner);
+    
+    setTimeout(() => {
+        banner.classList.add('fade-out');
+        setTimeout(() => banner.remove(), 500);
+    }, 6000);
 }
 
 // Generate daily AI market commentary
@@ -723,8 +896,8 @@ function renderAIInsights(totalValue, finalChange) {
     if (assetKeys.length === 0) return;
 
     const mainAsset = assetKeys.reduce((a, b) => {
-        const valA = (portfolio[a] || 0) * (latestPrices[a] || 0);
-        const valB = (portfolio[b] || 0) * (latestPrices[b] || 0);
+        const valA = (portfolio[a]?.amount || 0) * (latestPrices[a] || 0);
+        const valB = (portfolio[b]?.amount || 0) * (latestPrices[b] || 0);
         return valA > valB ? a : b;
     });
 
@@ -748,15 +921,24 @@ function renderAIInsights(totalValue, finalChange) {
     aiInsightText.innerHTML = commentary;
 }
 
+
 // Initialize application
 async function initApp() {
     initTimeframeControls();
     loadPortfolio();
+    loadAlarms();
+    renderAlarms();
     
     // Portfolio add item listener
     const addBtn = document.getElementById('add-portfolio-item-btn');
     if (addBtn) {
         addBtn.addEventListener('click', addPortfolioItem);
+    }
+    
+    // Alarm set listener
+    const alarmBtn = document.getElementById('set-alarm-btn');
+    if (alarmBtn) {
+        alarmBtn.addEventListener('click', addAlarm);
     }
     
     // Search listener

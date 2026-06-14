@@ -126,7 +126,7 @@
                 <!-- Portföy Takibi & Hesaplayıcı -->
                 <div class="glass-card portfolio-card">
                     <h3 class="section-title"><i class="fa-solid fa-wallet"></i> Varlık Portföyüm</h3>
-                    <p class="section-subtitle">Kendi varlıklarınızı ekleyin ve toplam değerinizi canlı takip edin</p>
+                    <p class="section-subtitle">Kendi varlıklarınızı maliyetleriyle ekleyin ve toplam kâr/zararınızı canlı takip edin</p>
                     
                     <div class="portfolio-inputs">
                         <select id="portfolio-asset-select">
@@ -138,15 +138,20 @@
                             <option value="BTC">Bitcoin (BTC)</option>
                             <option value="ETH">Ethereum (ETH)</option>
                         </select>
-                        <input type="number" id="portfolio-amount-input" placeholder="Miktar (örn: 12.5)" step="any">
+                        <input type="number" id="portfolio-amount-input" placeholder="Miktar" step="any">
+                        <input type="number" id="portfolio-cost-input" placeholder="Maliyet (₺/Birim)" step="any">
                         <button id="add-portfolio-item-btn"><i class="fa-solid fa-plus"></i> Ekle</button>
                     </div>
 
                     <div class="portfolio-content" id="portfolio-content" style="display: none;">
                         <div class="portfolio-stats">
                             <div class="stat-box">
-                                <span class="stat-label">Toplam Portföy Değeri</span>
+                                <span class="stat-label">Toplam Değer</span>
                                 <span class="stat-value" id="portfolio-total-value">0,00 ₺</span>
+                            </div>
+                            <div class="stat-box" style="align-items: center;">
+                                <span class="stat-label">Net Kâr/Zarar</span>
+                                <span class="stat-value" id="portfolio-total-pl">0,00 ₺</span>
                             </div>
                             <div class="stat-box" style="align-items: flex-end;">
                                 <span class="stat-label">Gecelik Değişim</span>
@@ -167,6 +172,34 @@
                             <i class="fa-solid fa-folder-open empty-icon" style="font-size: 2rem; color: var(--text-secondary); margin-bottom: 10px; opacity: 0.5; display: block;"></i>
                             <p style="color: var(--text-secondary); font-size: 0.9rem;">Henüz portföyünüze varlık eklemediniz. Başlamak için yukarıdaki formu kullanabilirsiniz.</p>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Fiyat Alarmları Card -->
+                <div class="glass-card alerts-card">
+                    <h3 class="section-title"><i class="fa-solid fa-bell"></i> Fiyat Alarmları</h3>
+                    <p class="section-subtitle">Varlık hedef fiyata ulaştığında tarayıcı ve ekran bildirimi alın</p>
+                    
+                    <div class="alarm-inputs">
+                        <select id="alarm-asset-select">
+                            <option value="Gram Altın">Gram Altın</option>
+                            <option value="Çeyrek Altın">Çeyrek Altın</option>
+                            <option value="USD">Amerikan Doları (USD)</option>
+                            <option value="EUR">Euro (EUR)</option>
+                            <option value="Gümüş">Gümüş (Gram)</option>
+                            <option value="BTC">Bitcoin (BTC)</option>
+                            <option value="ETH">Ethereum (ETH)</option>
+                        </select>
+                        <select id="alarm-condition-select">
+                            <option value="above">Değer ≥</option>
+                            <option value="below">Değer ≤</option>
+                        </select>
+                        <input type="number" id="alarm-target-input" placeholder="Hedef Fiyat (₺)" step="any">
+                        <button id="set-alarm-btn"><i class="fa-solid fa-bell"></i> Kur</button>
+                    </div>
+                    
+                    <div class="alarms-list" id="alarms-list">
+                        <!-- Dynamic active price alarms list -->
                     </div>
                 </div>
 
