@@ -104,18 +104,21 @@ header {
 
 .ticker-pct {
     font-weight: 700;
-    font-size: 0.72rem;
-    display: flex;
+    font-size: 0.68rem;
+    display: inline-flex;
     align-items: center;
     gap: 2px;
+    padding: 2px 6px;
+    border-radius: 12px;
+    color: #ffffff !important;
 }
 
 .ticker-pct.up {
-    color: var(--green-up);
+    background-color: var(--green-up);
 }
 
 .ticker-pct.down {
-    color: var(--red-down);
+    background-color: var(--red-down);
 }
 
 @media (max-width: 950px) {
