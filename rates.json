@@ -21,8 +21,8 @@
     {
       "name": "Ons Altın",
       "code": "Ons/USD",
-      "price": "195145.08",
-      "change": -0.08
+      "price": "4220.43",
+      "change": 0.12
     },
     {
       "name": "Gümüş Gram",
@@ -57,5 +57,5 @@
       "change": 0.08
     }
   ],
-  "last_updated": "2026-06-14T18:02:20.516240+00:00"
+  "last_updated": "2026-06-14T18:03:00.035363+00:00"
 }
