@@ -366,7 +366,9 @@ async function fetchMetalsAndBanks() {
             }
             if (data.last_updated) {
                 const date = new Date(data.last_updated);
-                updateTimeText.textContent = `Son Güncelleme: ${date.toLocaleString('tr-TR')} (Veriler anlık taranmaktadır)`;
+                const rel = window.NobleVision ? NobleVision.relativeTime(date) : date.toLocaleString('tr-TR');
+                updateTimeText.textContent = `Son Güncelleme: ${rel} · Veriler anlık taranmaktadır`;
+                updateTimeText.title = date.toLocaleString('tr-TR');
             }
         }
     } catch (err) {
@@ -598,6 +600,11 @@ async function updateFeeds() {
     checkAlarms();
     updateHeaderTickers();
     updateDynamicTitle();
+
+    // Make freshly-rendered rows keyboard-focusable (re-applied after each re-render).
+    document.querySelectorAll('.rate-row, .bank-row').forEach(r => {
+        if (!r.hasAttribute('tabindex')) { r.tabIndex = 0; r.setAttribute('role', 'button'); }
+    });
 }
 
 // Dynamic browser title tag updater for real-time SEO CTR
@@ -673,12 +680,22 @@ function updateHeaderTickers() {
 
 // Setup timeframe buttons click listeners
 function initTimeframeControls() {
-    document.querySelectorAll('.timeframe-btn').forEach(btn => {
+    const btns = Array.from(document.querySelectorAll('.timeframe-btn'));
+    btns.forEach((btn, i) => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
+            btns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
             btn.classList.add('active');
+            btn.setAttribute('aria-selected', 'true');
             activeTimeframe = btn.dataset.range;
             updateChart(activeAsset, activeAssetPrice);
+        });
+        // Arrow-key navigation between tabs (WAI-ARIA tablist pattern).
+        btn.addEventListener('keydown', (e) => {
+            if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+            e.preventDefault();
+            const dir = e.key === 'ArrowRight' ? 1 : -1;
+            const next = btns[(i + dir + btns.length) % btns.length];
+            next.focus(); next.click();
         });
     });
 }
@@ -790,8 +807,9 @@ function renderPortfolio() {
         listContainer.appendChild(itemRow);
     });
 
-    totalValText.textContent = formatTRY(totalValue);
-    
+    if (window.NobleVision) NobleVision.countUp(totalValText, totalValue, { format: formatTRY });
+    else totalValText.textContent = formatTRY(totalValue);
+
     // Total profit loss
     const netPl = totalValue - totalCost;
     const netPlPct = totalCost > 0 ? (netPl / totalCost) * 100 : 0;
@@ -868,7 +886,8 @@ function addPortfolioItem() {
     const cost = parseFloat(costInput.value) || latestPrices[assetCode] || 0;
 
     if (isNaN(amount) || amount <= 0) {
-        alert('Lütfen geçerli bir miktar giriniz.');
+        if (window.NobleVision) NobleVision.toast('Lütfen geçerli bir miktar giriniz.', 'down');
+        else alert('Lütfen geçerli bir miktar giriniz.');
         return;
     }
 
@@ -950,7 +969,8 @@ function addAlarm() {
     const target = parseFloat(targetInput.value);
     
     if (isNaN(target) || target <= 0) {
-        alert('Lütfen geçerli bir hedef fiyat giriniz.');
+        if (window.NobleVision) NobleVision.toast('Lütfen geçerli bir hedef fiyat giriniz.', 'down');
+        else alert('Lütfen geçerli bir hedef fiyat giriniz.');
         return;
     }
     
@@ -1009,16 +1029,10 @@ function sendNotification(title, body) {
         });
     }
     
-    // Custom UI banner alert
-    const banner = document.createElement('div');
-    banner.className = 'custom-alert-banner';
-    banner.innerHTML = `<i class="fa-solid fa-bell"></i> <span><strong>${title}</strong>: ${body}</span>`;
-    document.body.appendChild(banner);
-    
-    setTimeout(() => {
-        banner.classList.add('fade-out');
-        setTimeout(() => banner.remove(), 500);
-    }, 6000);
+    // Premium toast (NVDS) replaces the bespoke banner.
+    if (window.NobleVision) {
+        NobleVision.toast(`${title}: ${body}`, title.includes('Tetiklendi') ? 'up' : 'info');
+    }
 }
 
 // Generate daily AI market commentary
@@ -1059,6 +1073,22 @@ function renderAIInsights(totalValue, finalChange) {
 
 // Initialize application
 async function initApp() {
+    // Show skeleton placeholders while first data loads (replaced on render).
+    ['currency-list', 'metal-list', 'crypto-list', 'bank-list'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && window.NobleVision) NobleVision.skeleton(el, 4);
+    });
+
+    // PWA: register service worker (own scope, distinct from OneSignal's worker).
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(console.error));
+    }
+    let _deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault(); _deferredPrompt = e;
+        if (window.NobleVision) NobleVision.toast('Bu uygulamayı ana ekranına ekleyebilirsin 📲', 'info');
+    });
+
     initTimeframeControls();
     loadPortfolio();
     loadAlarms();
@@ -1078,6 +1108,15 @@ async function initApp() {
     
     // Search listener
     searchInput.addEventListener('input', applySearchFilter);
+
+    // Keyboard activation for asset rows (Enter/Space → select & chart).
+    document.addEventListener('keydown', (e) => {
+        const t = e.target;
+        if ((e.key === 'Enter' || e.key === ' ') && t && t.classList &&
+            (t.classList.contains('rate-row') || t.classList.contains('bank-row'))) {
+            e.preventDefault(); t.click();
+        }
+    });
     
     // Share portfolio listener
     const shareBtn = document.getElementById('share-portfolio-btn');
@@ -1087,6 +1126,14 @@ async function initApp() {
             shareBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Hazırlanıyor...';
             shareBtn.disabled = true;
             try {
+                // Load html2canvas on demand (kept out of the critical path).
+                if (typeof html2canvas === 'undefined') {
+                    await new Promise((res, rej) => {
+                        const s = document.createElement('script');
+                        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                        s.onload = res; s.onerror = rej; document.head.appendChild(s);
+                    });
+                }
                 const portfolioContent = document.getElementById('portfolio-content');
                 // Use html2canvas to capture the portfolio area
                 const canvas = await html2canvas(portfolioContent, {
@@ -1114,7 +1161,8 @@ async function initApp() {
                 }
             } catch (err) {
                 console.error("Görsel paylaşımı başarısız:", err);
-                alert("Görsel oluşturulurken bir hata oluştu.");
+                if (window.NobleVision) NobleVision.toast("Görsel oluşturulurken bir hata oluştu.", 'down');
+                else alert("Görsel oluşturulurken bir hata oluştu.");
             } finally {
                 shareBtn.innerHTML = originalText;
                 shareBtn.disabled = false;

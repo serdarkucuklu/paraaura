@@ -35,12 +35,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- html2canvas CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- FontAwesome Icons (async, non-render-blocking) -->
+    <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" media="print" onload="this.media='all'" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    <!-- Chart.js CDN (deferred — chart renders after first paint) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <!-- html2canvas is loaded on demand when the user taps "Görüntü Olarak Paylaş" (see app.js) -->
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9886684218086643" crossorigin="anonymous"></script>
     
@@ -59,11 +60,24 @@
       });
     </script>
     
+    <!-- Noble Vision Design System -->
+    <link rel="stylesheet" href="vendor/nvds/tokens.css">
+    <link rel="stylesheet" href="vendor/nvds/ds.css">
+    <link rel="stylesheet" href="vendor/nvds/icons.css">
+    <link rel="stylesheet" href="theme.css">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#9e7d28">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <a class="nv-skip-link" href="#main">İçeriğe geç</a>
     <header>
         <div class="header-container">
+            <button id="nv-theme-toggle" class="nv-btn nv-btn--icon" aria-label="Aydınlık/karanlık tema"
+                    style="position:absolute;right:16px;top:50%;transform:translateY(-50%)"
+                    onclick="NobleVision.toggleTheme()">
+                <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+            </button>
             <div class="header-ticker left" id="header-left-ticker">
                 <!-- Will be dynamically populated with USD, EUR, Ons -->
             </div>
@@ -109,14 +123,14 @@
             </div>
         </aside>
 
-        <main class="main-container">
+        <main id="main" class="main-container">
             <!-- LEFT COLUMN: Search & Core Feeds -->
             <section class="left-column">
                 <!-- Search Bar Card -->
                 <div class="glass-card search-card">
                     <div class="search-input-wrapper">
-                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                        <input type="text" id="search-input" placeholder="Döviz, altın, platin veya kripto ara...">
+                        <i class="fa-solid fa-magnifying-glass search-icon" aria-hidden="true"></i>
+                        <input type="text" id="search-input" aria-label="Varlık ara" placeholder="Döviz, altın, platin veya kripto ara...">
                     </div>
                 </div>
 
@@ -158,13 +172,13 @@
                 <div class="glass-card">
                     <div class="chart-header">
                         <h3 class="section-title" id="chart-title"><i class="fa-solid fa-chart-line"></i> Gram Altın</h3>
-                        <div class="timeframe-selector">
-                            <button class="timeframe-btn" data-range="5dk">5 Dk</button>
-                            <button class="timeframe-btn" data-range="1s">Saatlik</button>
-                            <button class="timeframe-btn active" data-range="1g">Günlük</button>
-                            <button class="timeframe-btn" data-range="1h">Haftalık</button>
-                            <button class="timeframe-btn" data-range="1a">Aylık</button>
-                            <button class="timeframe-btn" data-range="10y">10 Yıllık</button>
+                        <div class="timeframe-selector" role="tablist" aria-label="Grafik zaman aralığı">
+                            <button class="timeframe-btn" role="tab" aria-selected="false" data-range="5dk">5 Dk</button>
+                            <button class="timeframe-btn" role="tab" aria-selected="false" data-range="1s">Saatlik</button>
+                            <button class="timeframe-btn active" role="tab" aria-selected="true" data-range="1g">Günlük</button>
+                            <button class="timeframe-btn" role="tab" aria-selected="false" data-range="1h">Haftalık</button>
+                            <button class="timeframe-btn" role="tab" aria-selected="false" data-range="1a">Aylık</button>
+                            <button class="timeframe-btn" role="tab" aria-selected="false" data-range="10y">10 Yıllık</button>
                         </div>
                     </div>
                     <p class="section-subtitle" style="margin-top:-10px;">Eğilim Analizi (Varlık seçmek için soldaki tablodan üzerine tıklayabilirsiniz)</p>
@@ -179,7 +193,7 @@
                     <p class="section-subtitle">Kendi varlıklarınızı maliyetleriyle ekleyin ve toplam kâr/zararınızı canlı takip edin</p>
                     
                     <div class="portfolio-inputs">
-                        <select id="portfolio-asset-select">
+                        <select id="portfolio-asset-select" aria-label="Portföy varlığı seç">
                             <option value="Gram Altın">Gram Altın (Kapalıçarşı)</option>
                             <option value="Çeyrek Altın">Çeyrek Altın</option>
                             <option value="USD">Amerikan Doları (USD)</option>
@@ -188,8 +202,8 @@
                             <option value="BTC">Bitcoin (BTC)</option>
                             <option value="ETH">Ethereum (ETH)</option>
                         </select>
-                        <input type="number" id="portfolio-amount-input" placeholder="Miktar" step="any">
-                        <input type="number" id="portfolio-cost-input" placeholder="Maliyet (₺/Birim)" step="any">
+                        <input type="number" id="portfolio-amount-input" aria-label="Miktar" placeholder="Miktar" step="any">
+                        <input type="number" id="portfolio-cost-input" aria-label="Birim maliyet (₺)" placeholder="Maliyet (₺/Birim)" step="any">
                         <button id="add-portfolio-item-btn"><i class="fa-solid fa-plus"></i> Ekle</button>
                     </div>
 
@@ -234,7 +248,7 @@
                     <p class="section-subtitle">Varlık hedef fiyata ulaştığında tarayıcı ve ekran bildirimi alın</p>
                     
                     <div class="alarm-inputs">
-                        <select id="alarm-asset-select">
+                        <select id="alarm-asset-select" aria-label="Alarm varlığı seç">
                             <option value="Gram Altın">Gram Altın</option>
                             <option value="Çeyrek Altın">Çeyrek Altın</option>
                             <option value="USD">Amerikan Doları (USD)</option>
@@ -243,11 +257,11 @@
                             <option value="BTC">Bitcoin (BTC)</option>
                             <option value="ETH">Ethereum (ETH)</option>
                         </select>
-                        <select id="alarm-condition-select">
+                        <select id="alarm-condition-select" aria-label="Alarm koşulu">
                             <option value="above">Değer ≥</option>
                             <option value="below">Değer ≤</option>
                         </select>
-                        <input type="number" id="alarm-target-input" placeholder="Hedef Fiyat (₺)" step="any">
+                        <input type="number" id="alarm-target-input" aria-label="Hedef fiyat (₺)" placeholder="Hedef Fiyat (₺)" step="any">
                         <button id="set-alarm-btn"><i class="fa-solid fa-bell"></i> Kur</button>
                     </div>
                     
@@ -314,7 +328,7 @@
     </div>
 
     <div class="bottom-container">
-        <p class="update-time" id="update-time-text">Veriler güncelleniyor...</p>
+        <p class="update-time" id="update-time-text" aria-live="polite">Veriler güncelleniyor...</p>
     </div>
 
     <footer>
@@ -331,6 +345,7 @@
         </div>
     </footer>
 
-    <script src="app.js"></script>
+    <script src="vendor/nvds/ds.js"></script>
+    <script src="app.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,16 @@
+{
+  "name": "ParaAura — Canlı Döviz & Altın",
+  "short_name": "ParaAura",
+  "description": "Canlı döviz kurları, Kapalıçarşı altın fiyatları ve banka altın makas aralıkları.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fdfbf7",
+  "theme_color": "#9e7d28",
+  "lang": "tr",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

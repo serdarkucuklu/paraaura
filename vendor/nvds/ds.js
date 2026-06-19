@@ -28,7 +28,8 @@
       lerp: lerp,
 
       initTheme: function () {
-        var saved = localStorage.getItem('nv-theme') || 'system';
+        // Default to 'light' (safe) — apps opt into 'system'/'dark' only once fully audited.
+        var saved = localStorage.getItem('nv-theme') || 'light';
         NV.setTheme(saved);
       },
 
@@ -103,7 +104,7 @@
 
     // React to system theme changes when in "system" mode.
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () {
-      if ((localStorage.getItem('nv-theme') || 'system') === 'system') NV.setTheme('system');
+      if (localStorage.getItem('nv-theme') === 'system') NV.setTheme('system');
     });
 
     global.NobleVision = NV;

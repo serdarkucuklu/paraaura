@@ -1,14 +1,15 @@
 /* ─── BASE STYLES & VARIABLES (Financial Times Warm Light Theme) ────────── */
 :root {
-    --bg-primary: #fdfbf7;      /* Warm cream paper background */
-    --card-bg: #ffffff;         /* Pure white cards */
-    --border-color: #eae7e1;    /* Subtle warm border */
-    --text-primary: #1c1d21;     /* Charcoal/dark graphite text */
-    --text-secondary: #5c5e66;   /* Muted graphite text */
-    --accent-gold: #9e7d28;      /* Deep bronze gold */
-    --accent-gold-hover: #b8901c;/* Lighter gold on hover */
-    --green-up: #2e7d32;         /* Soft forest green for increases */
-    --red-down: #c62828;         /* Soft brick red for decreases */
+    /* Colors mapped onto Noble Vision theme tokens (theme.css); fallbacks preserve original look. */
+    --bg-primary: var(--bg, #fdfbf7);
+    --card-bg: var(--surface, #ffffff);
+    --border-color: var(--border, #eae7e1);
+    --text-primary: var(--text, #1c1d21);
+    --text-secondary: var(--text-muted, #54565e); /* darkened from #5c5e66 for AA contrast */
+    --accent-gold: var(--accent, #9e7d28);
+    --accent-gold-hover: var(--accent-hover, #b8901c);
+    --green-up: var(--up, #2e7d32);
+    --red-down: var(--down, #c62828);
     --radius-lg: 16px;
     --radius-md: 8px;
     --font-sans: 'Inter', sans-serif;
@@ -1193,5 +1194,13 @@ footer {
 
 .affiliate-banner a:hover {
     color: var(--accent-gold-hover);
+}
+
+/* ─── NVDS integration: theme toggle anchor + dark-mode safety ───────────── */
+.header-container { position: relative; }
+#nv-theme-toggle { color: var(--text-primary); border-color: var(--border-color); background: var(--card-bg); }
+#nv-theme-toggle:hover { color: var(--accent-gold); }
+@media (max-width: 768px) {
+  #nv-theme-toggle { right: 10px !important; width: 34px; height: 34px; }
 }
 
