@@ -73,11 +73,8 @@
     <a class="nv-skip-link" href="#main">İçeriğe geç</a>
     <header>
         <div class="header-container">
-            <button id="nv-theme-toggle" class="nv-btn nv-btn--icon" aria-label="Aydınlık/karanlık tema"
-                    style="position:absolute;right:16px;top:50%;transform:translateY(-50%)"
-                    onclick="NobleVision.toggleTheme()">
-                <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
-            </button>
+            <!-- Theme toggle deferred until dark mode is fully audited across style.css
+                 (only :root color vars are themed today; many light colors are still hardcoded). -->
             <div class="header-ticker left" id="header-left-ticker">
                 <!-- Will be dynamically populated with USD, EUR, Ons -->
             </div>

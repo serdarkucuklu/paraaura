@@ -1079,10 +1079,11 @@ async function initApp() {
         if (el && window.NobleVision) NobleVision.skeleton(el, 4);
     });
 
-    // PWA: register service worker (own scope, distinct from OneSignal's worker).
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(console.error));
-    }
+    // NOTE: a standalone service worker is intentionally NOT registered.
+    // OneSignal already owns a root-scope worker (OneSignalSDKWorker.js); registering a second
+    // root-scope SW would replace it and break push notifications. Offline caching is deferred
+    // until it can be folded into OneSignal's worker and verified in a real browser.
+    // (sw.js / offline.html are kept in the repo for that follow-up.)
     let _deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault(); _deferredPrompt = e;
