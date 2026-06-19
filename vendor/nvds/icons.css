@@ -1,0 +1,17 @@
+/* Noble Vision Design System — icon helpers.
+   Strategy: FontAwesome is loaded ASYNCHRONOUSLY (non-render-blocking) by each app's <head>
+   so it never blocks first paint. .nv-icon gives consistent inline sizing. */
+.nv-icon{display:inline-flex;width:1em;height:1em;line-height:1;vertical-align:-.125em}
+
+/*
+  Async FontAwesome pattern injected into each app <head> (see plan Task 8):
+
+  <link rel="preload" as="style"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <noscript>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  </noscript>
+*/

@@ -605,6 +605,30 @@ footer {
     letter-spacing: 0.5px;
 }
 
+.ecosystem-links {
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+.ecosystem-links strong {
+    color: var(--text-primary);
+    margin-right: 10px;
+}
+
+.ecosystem-links a {
+    color: var(--accent-gold);
+    text-decoration: none;
+    font-weight: 600;
+    margin: 0 8px;
+    transition: var(--transition);
+}
+
+.ecosystem-links a:hover {
+    color: var(--text-primary);
+    text-decoration: underline;
+}
+
 /* ─── APP LAYOUT WRAPPER & SKYSCRAPER ADS ────────────────────────────────── */
 .app-layout-wrapper {
     display: flex;
@@ -709,8 +733,31 @@ footer {
 .skyscraper-item-price {
     font-size: 0.8rem;
     color: var(--accent-gold);
-    font-weight: 700;
+    font-weight: 500;
 }
+
+.share-btn {
+    background-color: var(--card-bg);
+    color: var(--accent-gold);
+    border: 1px solid var(--border-color);
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.share-btn:hover {
+    background-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+/* ─── ALERTS ─────────────────────────────────────────────────────────────── */
 
 /* ─── RESPONSIVE DESIGN ──────────────────────────────────────────────────── */
 @media (max-width: 1350px) {

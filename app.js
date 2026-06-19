@@ -1079,6 +1079,49 @@ async function initApp() {
     // Search listener
     searchInput.addEventListener('input', applySearchFilter);
     
+    // Share portfolio listener
+    const shareBtn = document.getElementById('share-portfolio-btn');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', async () => {
+            const originalText = shareBtn.innerHTML;
+            shareBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Hazırlanıyor...';
+            shareBtn.disabled = true;
+            try {
+                const portfolioContent = document.getElementById('portfolio-content');
+                // Use html2canvas to capture the portfolio area
+                const canvas = await html2canvas(portfolioContent, {
+                    backgroundColor: '#161616', // Match the dark theme background
+                    scale: 2, // High resolution
+                    logging: false
+                });
+                
+                const imageBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                const file = new File([imageBlob], 'paraaura_portfoy.png', { type: 'image/png' });
+
+                // Try to use native Web Share API with files if supported
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        title: 'ParaAura Portföyüm',
+                        text: 'ParaAura üzerinden portföyümün güncel durumu!',
+                        files: [file]
+                    });
+                } else {
+                    // Fallback to downloading the image
+                    const link = document.createElement('a');
+                    link.download = 'paraaura_portfoy.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                }
+            } catch (err) {
+                console.error("Görsel paylaşımı başarısız:", err);
+                alert("Görsel oluşturulurken bir hata oluştu.");
+            } finally {
+                shareBtn.innerHTML = originalText;
+                shareBtn.disabled = false;
+            }
+        });
+    }
+
     await updateFeeds();
     updateChart(activeAsset, activeAssetPrice);
     renderPortfolio();

@@ -1,0 +1,102 @@
+/* Noble Vision Design System — component layer (.nv-*).
+   Depends on tokens.css (primitives) + each app's theme.css (color slots). */
+
+/* ─── Cards ───────────────────────────────────────────────────────────────── */
+.nv-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);box-shadow:var(--elev-2);
+}
+.nv-glass{
+  background:color-mix(in srgb, var(--surface) 82%, transparent);
+  border:1px solid var(--border);border-radius:var(--radius-lg);
+  box-shadow:var(--elev-2);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────────────────── */
+.nv-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);
+  font:600 var(--fs-sm)/1 var(--font-sans);padding:var(--sp-3) var(--sp-5);
+  border-radius:var(--radius-pill);border:1px solid var(--border);background:var(--surface);
+  color:var(--text);cursor:pointer;
+  transition:transform var(--dur-fast) var(--ease-standard),
+             box-shadow var(--dur-base) var(--ease-standard),
+             background var(--dur-base) var(--ease-standard);
+}
+.nv-btn--primary{background:var(--accent);color:var(--accent-contrast);border-color:var(--accent)}
+.nv-btn--ghost{background:transparent}
+.nv-btn--icon{padding:var(--sp-2);width:40px;height:40px;border-radius:var(--radius-pill)}
+.nv-btn:hover{transform:translateY(-1px);box-shadow:var(--elev-2)}
+.nv-btn:active{transform:translateY(0) scale(.98)}
+.nv-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ─── Inputs ──────────────────────────────────────────────────────────────── */
+.nv-input,.nv-select{
+  background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+  padding:var(--sp-3) var(--sp-4);border-radius:var(--radius-sm);
+  font:400 var(--fs-sm) var(--font-sans);outline:none;
+  transition:border-color var(--dur-base),background var(--dur-base);
+}
+.nv-input:focus,.nv-select:focus{border-color:var(--accent)}
+.nv-input:focus-visible,.nv-select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+/* ─── Badge / chip ────────────────────────────────────────────────────────── */
+.nv-badge{
+  display:inline-flex;align-items:center;gap:var(--sp-1);
+  font:600 var(--fs-xs) var(--font-sans);padding:2px var(--sp-2);
+  border-radius:var(--radius-pill);background:var(--surface-2);color:var(--text-muted);
+}
+.nv-badge--up{color:var(--up);background:color-mix(in srgb,var(--up) 12%,transparent)}
+.nv-badge--down{color:var(--down);background:color-mix(in srgb,var(--down) 12%,transparent)}
+
+/* ─── Skeleton ────────────────────────────────────────────────────────────── */
+.nv-skeleton{
+  position:relative;overflow:hidden;background:var(--surface-2);
+  border-radius:var(--radius-sm);min-height:1em;
+}
+.nv-skeleton::after{
+  content:"";position:absolute;inset:0;transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+  animation:nv-shimmer 1.2s infinite;
+}
+@keyframes nv-shimmer{100%{transform:translateX(100%)}}
+@media (prefers-reduced-motion: reduce){.nv-skeleton::after{animation:none}}
+
+/* ─── Price flash (consumed by app.js applyFlash) ─────────────────────────── */
+.flash-up{animation:nv-flash-up var(--dur-slow) var(--ease-standard)}
+.flash-down{animation:nv-flash-down var(--dur-slow) var(--ease-standard)}
+@keyframes nv-flash-up{0%{background:color-mix(in srgb,var(--up) 22%,transparent)}100%{background:transparent}}
+@keyframes nv-flash-down{0%{background:color-mix(in srgb,var(--down) 22%,transparent)}100%{background:transparent}}
+
+/* ─── Toast ───────────────────────────────────────────────────────────────── */
+.nv-toast-wrap{
+  position:fixed;left:50%;bottom:var(--sp-5);transform:translateX(-50%);
+  display:flex;flex-direction:column;gap:var(--sp-2);z-index:var(--z-toast);width:min(92vw,420px);
+}
+.nv-toast{
+  display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) var(--sp-4);
+  background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);
+  border-radius:var(--radius-md);box-shadow:var(--elev-3);color:var(--text);font-size:var(--fs-sm);
+  opacity:0;transform:translateY(10px);
+  transition:opacity var(--dur-base),transform var(--dur-base);
+}
+.nv-toast.nv-show{opacity:1;transform:translateY(0)}
+.nv-toast--up{border-left-color:var(--up)}
+.nv-toast--down{border-left-color:var(--down)}
+
+/* ─── Tabs ────────────────────────────────────────────────────────────────── */
+.nv-tab{
+  background:transparent;border:none;color:var(--text-muted);
+  padding:var(--sp-2) var(--sp-4);border-radius:var(--radius-pill);
+  font:600 var(--fs-sm) var(--font-sans);cursor:pointer;
+  transition:background var(--dur-base),color var(--dur-base);
+}
+.nv-tab[aria-selected="true"]{background:var(--accent);color:var(--accent-contrast)}
+.nv-tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ─── Skip link ───────────────────────────────────────────────────────────── */
+.nv-skip-link{
+  position:absolute;left:var(--sp-3);top:-3rem;background:var(--accent);
+  color:var(--accent-contrast);padding:var(--sp-2) var(--sp-4);border-radius:var(--radius-sm);
+  z-index:var(--z-modal);transition:top var(--dur-base);
+}
+.nv-skip-link:focus{top:var(--sp-3)}
