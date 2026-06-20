@@ -46,7 +46,7 @@ def verify_premium_markers():
         'FontAwesome async (media=print)': 'media="print"' in html and 'font-awesome' in html,
         'Chart.js deferred': 'chart.js" defer' in html,
         # Unbreakable revenue/SEO contracts
-        'AdSense client id intact': 'ca-pub-9886684218086643' in html,
+        'AdSense client id intact': 'ca-pub-9351400259394108' in html,
         'OneSignal app id intact': 'c2d81acd-bc71-4fc7-aa77-7deffece8a2c' in html,
         'FAQ JSON-LD intact': 'application/ld+json' in html and 'FAQPage' in html,
         'ecosystem footer intact': 'fiyat-dedektifi.vercel.app' in html and 'aksam-ne-pisirsem.vercel.app' in html,
