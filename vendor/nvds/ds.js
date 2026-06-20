@@ -28,8 +28,10 @@
       lerp: lerp,
 
       initTheme: function () {
-        // Default to 'light' (safe) — apps opt into 'system'/'dark' only once fully audited.
-        var saved = localStorage.getItem('nv-theme') || 'light';
+        // Priority: saved choice → app's pre-set <html data-theme> (no FOUC) → 'light'.
+        var saved = localStorage.getItem('nv-theme')
+          || document.documentElement.getAttribute('data-theme')
+          || 'light';
         NV.setTheme(saved);
       },
 

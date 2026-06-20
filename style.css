@@ -39,7 +39,7 @@ body {
 header {
     padding: 12px 20px;
     border-bottom: 1px solid var(--border-color);
-    background: #fcfaf5;
+    background: var(--surface-2);
     position: relative;
     z-index: 10;
 }
@@ -81,7 +81,7 @@ header {
 
 .ticker-badge:hover {
     border-color: var(--accent-gold);
-    background: #faf8f5;
+    background: var(--surface-2);
     transform: translateY(-1px);
     box-shadow: 0 4px 10px rgba(158, 125, 40, 0.08);
 }
@@ -241,7 +241,7 @@ header {
 
 #search-input {
     width: 100%;
-    background: #faf8f5;
+    background: var(--surface-2);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     color: var(--text-primary);
@@ -253,7 +253,7 @@ header {
 
 #search-input:focus {
     border-color: var(--accent-gold);
-    background: #ffffff;
+    background: var(--surface);
 }
 
 /* ─── CHART BOX STYLES & TIMEFRAME SELECTOR ──────────────────────────────── */
@@ -273,7 +273,7 @@ header {
 .timeframe-selector {
     display: flex;
     gap: 4px;
-    background: #faf8f5;
+    background: var(--surface-2);
     border: 1px solid var(--border-color);
     padding: 3px;
     border-radius: 20px;
@@ -328,7 +328,7 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 14px 10px;
-    border-bottom: 1px solid #f2efea;
+    border-bottom: 1px solid var(--border);
     border-radius: var(--radius-md);
     cursor: pointer;
     transition: var(--transition);
@@ -340,11 +340,11 @@ header {
 }
 
 .rate-row:hover {
-    background-color: #faf7f2;
+    background-color: var(--surface-2);
 }
 
 .rate-row.active {
-    background-color: #f5eedf !important;
+    background-color: var(--surface-2) !important;
     border-left: 3px solid var(--accent-gold);
     padding-left: 7px;
 }
@@ -414,7 +414,7 @@ header {
     grid-template-columns: 2fr 1fr 1fr;
     align-items: center;
     padding: 12px 10px;
-    border-bottom: 1px solid #f2efea;
+    border-bottom: 1px solid var(--border);
     border-radius: var(--radius-md);
     cursor: pointer;
     transition: var(--transition);
@@ -425,11 +425,11 @@ header {
 }
 
 .bank-row:hover {
-    background-color: #faf7f2;
+    background-color: var(--surface-2);
 }
 
 .bank-row.active {
-    background-color: #f5eedf !important;
+    background-color: var(--surface-2) !important;
     border-left: 3px solid var(--accent-gold);
     padding-left: 7px;
 }
@@ -526,7 +526,7 @@ header {
 .book-item {
     display: flex;
     gap: 15px;
-    background: #faf8f5;
+    background: var(--surface-2);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     padding: 20px;
@@ -537,7 +537,7 @@ header {
 
 .book-item:hover {
     border-color: var(--accent-gold);
-    background: #ffffff;
+    background: var(--surface);
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(158, 125, 40, 0.05);
 }
@@ -592,7 +592,7 @@ footer {
     border-top: 1px solid var(--border-color);
     color: var(--text-secondary);
     font-size: 0.78rem;
-    background: #fcfaf5;
+    background: var(--surface-2);
 }
 
 .footer-container {
@@ -702,7 +702,7 @@ footer {
     flex-direction: column;
     gap: 8px;
     padding: 10px;
-    background: #faf8f5;
+    background: var(--surface-2);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     text-decoration: none;
@@ -711,7 +711,7 @@ footer {
 
 .skyscraper-item:hover {
     border-color: var(--accent-gold);
-    background: #ffffff;
+    background: var(--surface);
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(158, 125, 40, 0.05);
 }
@@ -1203,4 +1203,125 @@ footer {
 @media (max-width: 768px) {
   #nv-theme-toggle { right: 10px !important; width: 34px; height: 34px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   KAPALIÇARŞI TERMINAL — dark bullion/terminal skin (signature: tabular-mono
+   numbers on ink with gold-leaf hairlines). Appended last so it owns the look.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --font-serif: 'Fraunces', Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+body {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(1100px 420px at 50% -120px, rgba(212,181,114,.07), transparent 70%),
+    radial-gradient(900px 500px at 100% 0, rgba(212,181,114,.04), transparent 60%),
+    linear-gradient(180deg, #0d0f13 0%, #0b0c10 100%);
+  background-attachment: fixed;
+}
+
+/* ── Header → a gold ticker-tape band ───────────────────────────────────── */
+header {
+  background: linear-gradient(180deg, rgba(212,181,114,.07), rgba(212,181,114,0)), #0b0c10;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 rgba(212,181,114,.10);
+}
+.logo {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: .03em;
+  color: var(--text);
+}
+.logo .accent { color: var(--accent); }
+.logo-svg { filter: drop-shadow(0 0 6px rgba(212,181,114,.35)); }
+
+/* ── Cards → ink panels with gold hairline + depth ──────────────────────── */
+.glass-card,
+.skyscraper-column {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 1px 0 rgba(212,181,114,.05) inset, 0 18px 44px rgba(0,0,0,.5);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.glass-card:hover { border-color: rgba(212,181,114,.32); }
+
+.section-title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: var(--text);
+}
+.section-title i { color: var(--accent); }
+.section-subtitle { color: var(--text-muted); }
+
+/* ── THE SIGNATURE: every number in tabular monospace ───────────────────── */
+.rate-price, .rate-change, .rate-code,
+.bank-price-buy, .bank-price-sell, .bank-headers span,
+.ticker-val, .ticker-pct, .ticker-label,
+.stat-value, .stat-label,
+.portfolio-item-val, .portfolio-item-amount, .portfolio-item-pl,
+.timeframe-btn, #update-time-text {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+.rate-price { font-weight: 600; color: var(--text); letter-spacing: -.01em; }
+.rate-code {
+  text-transform: uppercase; font-size: .66rem; letter-spacing: .12em;
+  color: var(--text-muted);
+}
+.rate-name { color: var(--text); }
+.rate-change.up, .ticker-pct.up, .pl-up, .bank-price-buy { color: var(--up); }
+.rate-change.down, .ticker-pct.down, .pl-down { color: var(--down); }
+.bank-price-sell { color: var(--accent); }
+
+/* ── Ticker badges → terminal chips ─────────────────────────────────────── */
+.ticker-badge {
+  background: rgba(212,181,114,.06);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.ticker-badge:hover { border-color: rgba(212,181,114,.4); background: rgba(212,181,114,.1); }
+.ticker-label { color: var(--accent); letter-spacing: .14em; font-size: .6rem; }
+
+/* ── Rate / bank rows → ledger lines ────────────────────────────────────── */
+.rate-row, .bank-row { border-bottom: 1px solid var(--border); border-radius: 0; }
+.rate-row:hover, .bank-row:hover { background: rgba(212,181,114,.05); }
+.rate-row.active, .bank-row.active {
+  background: linear-gradient(90deg, rgba(212,181,114,.12), rgba(212,181,114,0) 70%);
+  border-left: 2px solid var(--accent);
+  color: var(--text) !important;
+}
+
+/* ── Timeframe tabs ─────────────────────────────────────────────────────── */
+.timeframe-btn { letter-spacing: .04em; border-radius: 8px; color: var(--text-muted); }
+.timeframe-btn:hover { color: var(--text); }
+.timeframe-btn.active {
+  background: var(--accent); color: var(--accent-contrast);
+  box-shadow: 0 0 0 1px var(--accent), 0 4px 14px rgba(212,181,114,.25);
+}
+
+/* ── Forms / buttons on ink ─────────────────────────────────────────────── */
+.portfolio-inputs input, .portfolio-inputs select,
+.alarm-inputs input, .alarm-inputs select, #search-input {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: var(--border);
+}
+#add-portfolio-item-btn, #set-alarm-btn, .share-btn {
+  background: var(--accent); color: var(--accent-contrast); border: none; font-weight: 600;
+}
+#add-portfolio-item-btn:hover, #set-alarm-btn:hover, .share-btn:hover { background: var(--accent-hover); }
+
+/* ── Hero emphasis: the chart title reads like a terminal headline ──────── */
+#chart-title { font-family: var(--font-serif); font-size: 1.35rem; }
+
+/* ── Affiliate banners stay quiet on ink ────────────────────────────────── */
+.affiliate-banner { background: rgba(212,181,114,.06); border: 1px solid var(--border); }
+
+@media (prefers-reduced-motion: reduce) { body { background-attachment: scroll; } }
 

@@ -1,14 +1,14 @@
-/* ParaAura theme — bronze-gold finance identity for the Noble Vision Design System.
-   Light is the canonical look (matches the original cream/charcoal palette). */
-:root, :root[data-theme="light"] {
+/* ParaAura — "Kapalıçarşı Terminal" skin for the Noble Vision Design System.
+   Dark (ink + gold leaf) is the canonical look; light is kept as an option. */
+:root, :root[data-theme="dark"] {
+  --bg:#0d0f13; --surface:#16191f; --surface-2:#1e222b;
+  --text:#ece7db; --text-muted:#9aa0ab; --border:rgba(212,181,114,.16);
+  --accent:#d4b572; --accent-hover:#e8cd8f; --accent-contrast:#0d0f13;
+  --up:#34d399; --down:#f87171;
+}
+:root[data-theme="light"] {
   --bg:#fdfbf7; --surface:#ffffff; --surface-2:#f6f3ee;
   --text:#1c1d21; --text-muted:#54565e; --border:#eae7e1;
   --accent:#9e7d28; --accent-hover:#b8901c; --accent-contrast:#ffffff;
   --up:#2e7d32; --down:#c62828;
-}
-:root[data-theme="dark"] {
-  --bg:#15140f; --surface:#1f1d17; --surface-2:#262219;
-  --text:#f3efe4; --text-muted:#b3ad9c; --border:#332e22;
-  --accent:#d8b26c; --accent-hover:#e7c789; --accent-contrast:#15140f;
-  --up:#5cc66a; --down:#e76d6d;
 }

@@ -171,7 +171,7 @@ const verticalLinePlugin = {
             ctx.moveTo(x, topY);
             ctx.lineTo(x, bottomY);
             ctx.lineWidth = 1;
-            ctx.strokeStyle = 'rgba(158, 125, 40, 0.25)'; // gold line
+            ctx.strokeStyle = 'rgba(212, 181, 114, 0.25)'; // gold line
             ctx.setLineDash([4, 4]); // dashed line
             ctx.stroke();
             ctx.restore();
@@ -196,8 +196,8 @@ function updateChart(assetName, price) {
         const chartArea = trendChartInstance.chartArea;
         if (chartArea) {
             const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-            gradient.addColorStop(0, 'rgba(158, 125, 40, 0.22)');
-            gradient.addColorStop(1, 'rgba(158, 125, 40, 0.00)');
+            gradient.addColorStop(0, 'rgba(212, 181, 114, 0.22)');
+            gradient.addColorStop(1, 'rgba(212, 181, 114, 0.00)');
             trendChartInstance.data.datasets[0].backgroundColor = gradient;
         }
         trendChartInstance.update('none'); // silent update
@@ -209,25 +209,25 @@ function updateChart(assetName, price) {
                 datasets: [{
                     label: `${assetName} (TRY)`,
                     data: points,
-                    borderColor: '#9e7d28',
+                    borderColor: '#d4b572',
                     borderWidth: 2,
                     backgroundColor: function(context) {
                         const chart = context.chart;
                         const {ctx, chartArea} = chart;
-                        if (!chartArea) return 'rgba(158, 125, 40, 0.05)';
+                        if (!chartArea) return 'rgba(212, 181, 114, 0.05)';
                         const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                        gradient.addColorStop(0, 'rgba(158, 125, 40, 0.22)');
-                        gradient.addColorStop(1, 'rgba(158, 125, 40, 0.00)');
+                        gradient.addColorStop(0, 'rgba(212, 181, 114, 0.22)');
+                        gradient.addColorStop(1, 'rgba(212, 181, 114, 0.00)');
                         return gradient;
                     },
                     fill: true,
                     tension: 0.3,
-                    pointBackgroundColor: '#9e7d28',
+                    pointBackgroundColor: '#d4b572',
                     pointBorderColor: '#ffffff',
                     pointBorderWidth: 1.5,
                     pointRadius: 0, // clean look, show only on hover
                     pointHoverRadius: 6,
-                    pointHoverBackgroundColor: '#9e7d28',
+                    pointHoverBackgroundColor: '#d4b572',
                     pointHoverBorderColor: '#ffffff',
                     pointHoverBorderWidth: 2
                 }]
@@ -257,11 +257,11 @@ function updateChart(assetName, price) {
                 scales: {
                     x: {
                         grid: { display: false },
-                        ticks: { font: { family: 'Inter', size: 9 }, maxRotation: 0 }
+                        ticks: { color: '#9aa0ab', font: { family: 'JetBrains Mono', size: 9 }, maxRotation: 0 }
                     },
                     y: {
-                        grid: { color: '#eae7e1' },
-                        ticks: { font: { family: 'Inter', size: 9 } }
+                        grid: { color: 'rgba(212,181,114,0.12)' },
+                        ticks: { color: '#9aa0ab', font: { family: 'JetBrains Mono', size: 9 } }
                     }
                 }
             },
