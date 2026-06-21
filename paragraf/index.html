@@ -26,8 +26,9 @@
     .pg-row{display:flex;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-2) 0;border-bottom:1px solid var(--border)}
     .pg-controls{display:flex;flex-direction:column;gap:var(--sp-3);margin-bottom:var(--sp-5)}
     .pg-note{font-size:var(--fs-xs);color:var(--text-muted);margin-top:var(--sp-4)}
-    /* Gizli paylasim karti (1080x1350 4:5) */
-    #share-card{position:fixed;left:-9999px;top:0;width:1080px;height:1350px;background:var(--bg);
+    /* Gizli paylasim karti (1080x1350 4:5). position:absolute -> html2canvas ekran-disi yakalayabilir
+       (position:fixed off-screen html2canvas'te bos/bozuk capture'a yol acar). */
+    #share-card{position:absolute;left:-9999px;top:0;width:1080px;height:1350px;background:var(--bg);
       color:var(--text);padding:90px 80px;box-sizing:border-box;font-family:var(--font-sans)}
     #share-card .sc-title{font-family:var(--font-serif);font-size:64px;line-height:1.1;margin-bottom:40px}
     #share-card .sc-line{font-family:var(--font-mono);font-size:46px;margin:18px 0}

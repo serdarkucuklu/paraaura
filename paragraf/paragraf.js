@@ -94,20 +94,49 @@
       `<div class="sc-line">💛 Altında saklasaydın bugün: <b>${fmtTL(altinBugun)}</b></div>`;
   }
 
+  async function ensureHtml2Canvas() {
+    if (typeof html2canvas !== "undefined") return;
+    await new Promise((res, rej) => {
+      const s = document.createElement("script");
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+      s.onload = res; s.onerror = () => rej(new Error("html2canvas yüklenemedi (ağ/engel)."));
+      document.head.appendChild(s);
+    });
+  }
+
   async function paylas() {
     const btn = $("share-btn");
-    const eski = btn.innerHTML; btn.disabled = true; btn.textContent = "Hazırlanıyor...";
+    const eski = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Hazırlanıyor...';
     try {
-      const canvas = await html2canvas($("share-card"), { backgroundColor: "#0d0f13", scale: 1 });
+      await ensureHtml2Canvas();
+      const card = $("share-card");
+      const canvas = await html2canvas(card, {
+        backgroundColor: "#0d0f13", scale: 2, useCORS: true, logging: false,
+        width: 1080, height: 1350, windowWidth: 1080, windowHeight: 1350,
+      });
       const blob = await new Promise((res) => canvas.toBlob(res, "image/png"));
+      if (!blob) throw new Error("Görsel oluşturulamadı (toBlob boş döndü).");
       const file = new File([blob], "paragraf.png", { type: "image/png" });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({ files: [file], title: "ParaGraf", text: "Paran eridi mi? kuraura.com.tr/paragraf" });
       } else {
-        const a = document.createElement("a"); a.download = "paragraf.png"; a.href = canvas.toDataURL("image/png"); a.click();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.download = "paragraf.png"; a.href = url;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
       }
-    } catch (e) { console.error("paylasim hatasi", e); }
-    finally { btn.disabled = false; btn.innerHTML = eski; }
+    } catch (e) {
+      // Sessiz basarisizlik YOK: hatayi kullaniciya goster.
+      console.error("paylasim hatasi", e);
+      if (!(e && e.name === "AbortError")) { // kullanici share dialogunu iptal ettiyse uyari gosterme
+        alert("Kart oluşturulamadı: " + (e && e.message ? e.message : e));
+      }
+    } finally {
+      btn.disabled = false; btn.innerHTML = eski;
+    }
   }
 
   init();
