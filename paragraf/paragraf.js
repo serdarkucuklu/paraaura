@@ -70,7 +70,7 @@
       `<div class="pg-row"><span>TL'de tuttuysan</span><strong class="pg-num">${fmtTL(tutar)} <span style="color:var(--down)">(reel kayıp)</span></strong></div>`;
 
     cizGrafik(tutar);
-    guncelleKart(yil, tutar, ceyrekGec, ceyrekBug, ekmekGec, ekmekBug, altinBugun);
+    guncelleKart(yil, tutar, ceyrekGec, ceyrekBug, ekmekGec, ekmekBug, usdGec, usdBug, altinBugun);
   }
 
   function cizGrafik(tutar) {
@@ -86,12 +86,16 @@
     });
   }
 
-  function guncelleKart(yil, tutar, ceyrekGec, ceyrekBug, ekmekGec, ekmekBug, altinBugun) {
-    $("kart-yil-baslik").innerHTML = `${yil} → 2026<br><span id="kart-tutar">${fmtTL(tutar)}</span> ne oldu?`;
+  function guncelleKart(yil, tutar, ceyrekGec, ceyrekBug, ekmekGec, ekmekBug, usdGec, usdBug, altinBugun) {
+    const line = (label, val) => `<div class="sc-line"><span>${label}</span><b>${val}</b></div>`;
+    $("kart-yil-baslik").textContent = `${yil} → 2026`;
+    $("kart-amount").textContent = `${fmtTL(tutar)} ne oldu?`;
+    $("kart-hero-label").textContent = `O ${fmtTL(tutar)}'yi altında saklasaydın bugün`;
+    $("kart-hero-big").textContent = fmtTL(altinBugun);
     $("kart-satirlar").innerHTML =
-      `<div class="sc-line">🪙 Çeyrek altın: ${fmt.format(ceyrekGec)} → <b>${fmt.format(ceyrekBug)}</b></div>` +
-      `<div class="sc-line">🍞 Ekmek: ${fmt.format(ekmekGec)} → <b>${fmt.format(ekmekBug)}</b></div>` +
-      `<div class="sc-line">💛 Altında saklasaydın bugün: <b>${fmtTL(altinBugun)}</b></div>`;
+      line("🪙 Çeyrek altın", `${fmt.format(ceyrekGec)} → ${fmt.format(ceyrekBug)}`) +
+      line("🍞 Ekmek", `${fmt.format(ekmekGec)} → ${fmt.format(ekmekBug)}`) +
+      line("💵 Dolar", `${fmt.format(usdGec)} → ${fmt.format(usdBug)}`);
   }
 
   async function ensureHtml2Canvas() {

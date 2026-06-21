@@ -26,13 +26,23 @@
     .pg-row{display:flex;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-2) 0;border-bottom:1px solid var(--border)}
     .pg-controls{display:flex;flex-direction:column;gap:var(--sp-3);margin-bottom:var(--sp-5)}
     .pg-note{font-size:var(--fs-xs);color:var(--text-muted);margin-top:var(--sp-4)}
-    /* Gizli paylasim karti (1080x1350 4:5). position:absolute -> html2canvas ekran-disi yakalayabilir
+    /* Paylasim karti (1080x1350 4:5). position:absolute -> html2canvas ekran-disi yakalayabilir
        (position:fixed off-screen html2canvas'te bos/bozuk capture'a yol acar). */
     #share-card{position:absolute;left:-9999px;top:0;width:1080px;height:1350px;background:var(--bg);
-      color:var(--text);padding:90px 80px;box-sizing:border-box;font-family:var(--font-sans)}
-    #share-card .sc-title{font-family:var(--font-serif);font-size:64px;line-height:1.1;margin-bottom:40px}
-    #share-card .sc-line{font-family:var(--font-mono);font-size:46px;margin:18px 0}
-    #share-card .sc-brand{position:absolute;bottom:70px;left:80px;color:var(--accent);font-family:var(--font-mono);font-size:30px}
+      color:var(--text);padding:80px;box-sizing:border-box;font-family:var(--font-sans);
+      display:flex;flex-direction:column;background-image:radial-gradient(900px 500px at 80% -10%, rgba(212,181,114,.10), transparent 60%)}
+    #share-card .sc-eyebrow{font-family:var(--font-mono);font-size:28px;letter-spacing:.32em;color:var(--accent);text-transform:uppercase;margin-bottom:26px}
+    #share-card .sc-title{font-family:var(--font-serif);font-size:92px;line-height:1;margin:0 0 14px}
+    #share-card .sc-amount{font-family:var(--font-serif);font-size:50px;color:var(--text-muted);margin:0}
+    #share-card .sc-hero{margin:60px 0 52px;border-top:2px solid var(--border);border-bottom:2px solid var(--border);padding:46px 0}
+    #share-card .sc-hero .sc-hl{font-family:var(--font-mono);font-size:36px;color:var(--text-muted);margin-bottom:10px}
+    #share-card .sc-hero .sc-big{font-family:var(--font-serif);font-size:104px;color:var(--accent);line-height:1.02}
+    #share-card .sc-lines{flex:1}
+    #share-card .sc-line{font-family:var(--font-mono);font-size:46px;margin:30px 0;display:flex;justify-content:space-between;gap:24px}
+    #share-card .sc-line b{color:#fff}
+    #share-card .sc-foot{display:flex;justify-content:space-between;align-items:flex-end}
+    #share-card .sc-brand{color:var(--accent);font-family:var(--font-mono);font-size:34px}
+    #share-card .sc-note{color:var(--text-muted);font-family:var(--font-mono);font-size:24px}
   </style>
 </head>
 <body>
@@ -64,15 +74,26 @@
     </div>
   </main>
 
-  <!-- Gizli paylasim karti -->
+  <!-- Paylasim karti -->
   <div id="share-card">
-    <div class="sc-title" id="kart-yil-baslik">2015 → 2026<br><span id="kart-tutar">1.000 TL</span> ne oldu?</div>
-    <div id="kart-satirlar"></div>
-    <div class="sc-brand">kuraura.com.tr/paragraf</div>
+    <div>
+      <div class="sc-eyebrow">Paran eridi mi?</div>
+      <div class="sc-title" id="kart-yil-baslik">2015 → 2026</div>
+      <div class="sc-amount" id="kart-amount">₺1.000 ne oldu?</div>
+    </div>
+    <div class="sc-hero">
+      <div class="sc-hl" id="kart-hero-label">O parayı altında saklasaydın bugün</div>
+      <div class="sc-big" id="kart-hero-big">₺62.126</div>
+    </div>
+    <div class="sc-lines" id="kart-satirlar"></div>
+    <div class="sc-foot">
+      <span class="sc-brand">kuraura.com.tr/paragraf</span>
+      <span class="sc-note">≈ yaklaşık</span>
+    </div>
   </div>
 
   <script src="../vendor/nvds/ds.js"></script>
-  <script src="calc.js?v=2"></script>
-  <script src="paragraf.js?v=2" defer></script>
+  <script src="calc.js?v=3"></script>
+  <script src="paragraf.js?v=3" defer></script>
 </body>
 </html>
