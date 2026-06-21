@@ -1,0 +1,20 @@
+{
+  "meta": {
+    "guncelleme": "2026-06-21",
+    "not": "Yaklasik yillik ortalama degerler (TL). Tarihsel kisim kuratorludur; bilgilendirme amaclidir."
+  },
+  "yillar": {
+    "2005": { "gram_altin": 19.2,  "usd": 1.34,  "eur": 1.67,  "ekmek": 0.25, "benzin": 2.62,  "asgari_ucret_net": 350 },
+    "2008": { "gram_altin": 38.0,  "usd": 1.30,  "eur": 1.91,  "ekmek": 0.50, "benzin": 3.10,  "asgari_ucret_net": 503 },
+    "2010": { "gram_altin": 59.0,  "usd": 1.50,  "eur": 2.00,  "ekmek": 0.60, "benzin": 3.70,  "asgari_ucret_net": 577 },
+    "2013": { "gram_altin": 87.0,  "usd": 1.90,  "eur": 2.53,  "ekmek": 0.90, "benzin": 4.80,  "asgari_ucret_net": 804 },
+    "2015": { "gram_altin": 101.0, "usd": 2.72,  "eur": 3.02,  "ekmek": 1.00, "benzin": 4.60,  "asgari_ucret_net": 1000 },
+    "2018": { "gram_altin": 188.0, "usd": 4.83,  "eur": 5.70,  "ekmek": 1.25, "benzin": 6.40,  "asgari_ucret_net": 1603 },
+    "2020": { "gram_altin": 398.0, "usd": 7.00,  "eur": 8.00,  "ekmek": 1.50, "benzin": 6.50,  "asgari_ucret_net": 2324 },
+    "2021": { "gram_altin": 504.0, "usd": 8.85,  "eur": 10.50, "ekmek": 2.00, "benzin": 8.20,  "asgari_ucret_net": 2825 },
+    "2022": { "gram_altin": 940.0, "usd": 16.60, "eur": 17.50, "ekmek": 3.00, "benzin": 22.00, "asgari_ucret_net": 4253 },
+    "2023": { "gram_altin": 1478.0, "usd": 23.70, "eur": 25.60, "ekmek": 5.00, "benzin": 35.00, "asgari_ucret_net": 11402 },
+    "2024": { "gram_altin": 2425.0, "usd": 32.80, "eur": 35.50, "ekmek": 10.0, "benzin": 42.00, "asgari_ucret_net": 17002 },
+    "2025": { "gram_altin": 3344.0, "usd": 40.00, "eur": 44.00, "ekmek": 15.0, "benzin": 48.00, "asgari_ucret_net": 22104 }
+  }
+}
