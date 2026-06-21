@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ParaGraf | Paranın Eridi mi? Geçmiş TL Bugün Ne Alır?</title>
+  <meta name="description" content="Geçmişteki paranızın bugünkü satın alma gücünü altın, dolar, ekmek ve asgari ücret cinsinden çarpıcı şekilde görün. Enflasyon karşısında paranız ne kadar eridi?">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <meta name="google-adsense-account" content="ca-pub-9351400259394108">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9351400259394108" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="../vendor/nvds/tokens.css">
+  <link rel="stylesheet" href="../vendor/nvds/ds.css">
+  <link rel="stylesheet" href="../vendor/nvds/icons.css">
+  <link rel="stylesheet" href="../theme.css">
+  <meta name="theme-color" content="#0d0f13">
+  <style>
+    body{background:var(--bg);color:var(--text);font-family:var(--font-sans);margin:0;min-height:100vh}
+    .pg-wrap{max-width:760px;margin:0 auto;padding:var(--sp-5)}
+    .pg-title{font-family:var(--font-serif);font-size:var(--fs-2xl);margin:0 0 var(--sp-2)}
+    .pg-sub{color:var(--text-muted);margin:0 0 var(--sp-5)}
+    .pg-num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+    .pg-row{display:flex;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-2) 0;border-bottom:1px solid var(--border)}
+    .pg-controls{display:flex;flex-direction:column;gap:var(--sp-3);margin-bottom:var(--sp-5)}
+    .pg-note{font-size:var(--fs-xs);color:var(--text-muted);margin-top:var(--sp-4)}
+    /* Gizli paylasim karti (1080x1350 4:5) */
+    #share-card{position:fixed;left:-9999px;top:0;width:1080px;height:1350px;background:var(--bg);
+      color:var(--text);padding:90px 80px;box-sizing:border-box;font-family:var(--font-sans)}
+    #share-card .sc-title{font-family:var(--font-serif);font-size:64px;line-height:1.1;margin-bottom:40px}
+    #share-card .sc-line{font-family:var(--font-mono);font-size:46px;margin:18px 0}
+    #share-card .sc-brand{position:absolute;bottom:70px;left:80px;color:var(--accent);font-family:var(--font-mono);font-size:30px}
+  </style>
+</head>
+<body>
+  <a class="nv-skip-link" href="#main">İçeriğe geç</a>
+  <main id="main" class="pg-wrap">
+    <h1 class="pg-title">Paran <span style="color:var(--accent)">eridi mi?</span></h1>
+    <p class="pg-sub">Geçmişteki paranı bugün altın, dolar, ekmek ve asgari ücret cinsinden gör.</p>
+
+    <div class="nv-card" style="padding:var(--sp-5);margin-bottom:var(--sp-5)">
+      <div class="pg-controls">
+        <label>Yıl: <strong id="yil-label" class="pg-num">2015</strong>
+          <input type="range" id="yil-input" min="2005" max="2025" value="2015" step="1" class="volume-slider" style="width:100%">
+        </label>
+        <label>Tutar (TL)
+          <input type="number" id="tutar-input" class="nv-input" value="1000" min="1" step="any" aria-label="Tutar (TL)">
+        </label>
+      </div>
+
+      <div id="sonuc-gecmis"></div>
+      <div id="sonuc-bugun" style="margin-top:var(--sp-4)"></div>
+      <div id="deger-koruma" style="margin-top:var(--sp-4)"></div>
+
+      <div style="margin-top:var(--sp-5);height:240px"><canvas id="paragraf-chart"></canvas></div>
+
+      <button id="share-btn" class="nv-btn nv-btn--primary" style="margin-top:var(--sp-5)">
+        <i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Paylaş / İndir
+      </button>
+      <p class="pg-note">≈ Yaklaşık yıllık ortalama değerlerdir; bilgilendirme amaçlıdır. kuraura.com.tr/paragraf</p>
+    </div>
+  </main>
+
+  <!-- Gizli paylasim karti -->
+  <div id="share-card">
+    <div class="sc-title" id="kart-yil-baslik">2015 → 2026<br><span id="kart-tutar">1.000 TL</span> ne oldu?</div>
+    <div id="kart-satirlar"></div>
+    <div class="sc-brand">kuraura.com.tr/paragraf</div>
+  </div>
+
+  <script src="../vendor/nvds/ds.js"></script>
+  <script src="calc.js"></script>
+  <script src="paragraf.js" defer></script>
+</body>
+</html>
