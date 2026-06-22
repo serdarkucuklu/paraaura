@@ -45,7 +45,7 @@
     const yil = $("yil-input").value;
     $("yil-label").textContent = yil;
     const tutar = Math.max(0, parseFloat($("tutar-input").value) || 0);
-    const gec = data.yillar[yil] || data.yillar["2015"];
+    const gec = PG.interpoleYil(data.yillar, yil) || data.yillar["2015"];
 
     // o gunku adetler vs bugunku adetler (ayni tutar)
     const ceyrekGec = PG.birimAdedi(tutar, gec.gram_altin * CEYREK_GRAM);
