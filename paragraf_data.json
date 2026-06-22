@@ -16,5 +16,6 @@
     "2023": { "gram_altin": 1478.0, "usd": 23.70, "eur": 25.60, "ekmek": 5.00, "benzin": 35.00, "asgari_ucret_net": 11402 },
     "2024": { "gram_altin": 2425.0, "usd": 32.80, "eur": 35.50, "ekmek": 10.0, "benzin": 42.00, "asgari_ucret_net": 17002 },
     "2025": { "gram_altin": 3344.0, "usd": 40.00, "eur": 44.00, "ekmek": 15.0, "benzin": 48.00, "asgari_ucret_net": 22104 }
-  }
+  },
+  "guncel": { "gram_altin": 6274.0, "usd": 48.00, "eur": 54.00, "ekmek": 18.0, "benzin": 52.00, "asgari_ucret_net": 28075.5 }
 }

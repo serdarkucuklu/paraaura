@@ -22,9 +22,10 @@
     render();
   }
 
-  // Guncel (2026) degerler: canli rates.json'dan altin/usd/eur; gida/asgari paragraf_data'dan.
+  // Guncel (2026) degerler: data.guncel bloğu (USD/EUR/ekmek/asgari 2026); gram altin canli
+  // rates.json ile override edilir. data.guncel yoksa 2025 satirina dus (geriye uyumlu).
   async function buildGuncel() {
-    const son = data.yillar["2025"];
+    const son = data.guncel || data.yillar["2025"];
     const g = { gram_altin: son.gram_altin, usd: son.usd, eur: son.eur, ekmek: son.ekmek, benzin: son.benzin, asgari_ucret_net: son.asgari_ucret_net };
     try {
       const r = await (await fetch("../rates.json", { cache: "no-store" })).json();
@@ -119,6 +120,13 @@
       const canvas = await html2canvas(card, {
         backgroundColor: "#0d0f13", scale: 2, useCORS: true, logging: false,
         width: 1080, height: 1350, windowWidth: 1080, windowHeight: 1350,
+        // Karti capture penceresine [0,1080]x[0,1350] tasi. Gercek #share-card ekran disinda
+        // (left:-9999px) kalir -> kullanici flash gormez; ama klon -9999'da kalirsa capture bos
+        // doner (html2canvas 1.4.1). onclone YALNIZ render edilen klonu etkiler.
+        onclone: (doc) => {
+          const c = doc.getElementById("share-card");
+          if (c) { c.style.left = "0"; c.style.top = "0"; }
+        },
       });
       const blob = await new Promise((res) => canvas.toBlob(res, "image/png"));
       if (!blob) throw new Error("Görsel oluşturulamadı (toBlob boş döndü).");
