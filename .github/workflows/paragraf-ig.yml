@@ -1,0 +1,50 @@
+name: ParaGraf IG Sok-Karti
+
+on:
+  # Secret'lar (PARAGRAF_IG_BUSINESS_ID / PARAGRAF_META_ACCESS_TOKEN) eklenip manuel test
+  # basarili olunca asagidaki schedule satirini yorumdan cikar -> gunluk otomatik post.
+  # schedule:
+  #   - cron: '0 16 * * *'   # her gun 16:00 UTC = 19:00 TR (aksam etkilesim saati)
+  workflow_dispatch: {}      # manuel tetikleme (ilk test icin)
+
+permissions:
+  contents: write            # uretilen karti repoya push edebilmek icin
+
+jobs:
+  paragraf-ig:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: paragraf-bot
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Generate card + caption
+        run: python paragraf_bot.py
+
+      - name: Commit & push card (raw URL'in canli olmasi icin publish'ten ONCE)
+        run: |
+          git config user.name "paragraf-bot"
+          git config user.email "bot@kuraura.com.tr"
+          git add cards/latest.png cards/latest.json
+          if git diff --staged --quiet; then
+            echo "degisiklik yok"
+          else
+            git commit -m "chore(paragraf-bot): gunluk sok-karti $(date -u +%F)"
+            git push
+          fi
+
+      - name: Publish to Instagram (idempotent)
+        env:
+          INSTAGRAM_BUSINESS_ID: ${{ secrets.PARAGRAF_IG_BUSINESS_ID }}
+          META_ACCESS_TOKEN: ${{ secrets.PARAGRAF_META_ACCESS_TOKEN }}
+        run: python publisher_ig.py
