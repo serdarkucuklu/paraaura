@@ -741,6 +741,86 @@ function initTimeframeControls() {
 // Portfolio Management State
 let portfolio = {}; // format: { assetCode: { amount: X, cost: Y } }
 let portfolioChart = null;
+let portfolioHistoryChart = null;
+
+// Total current market value of the portfolio (used by portfolio-level alarms too).
+function portfolioTotalValue() {
+    let t = 0;
+    for (const k in portfolio) {
+        const it = portfolio[k] || {};
+        t += (it.amount || 0) * (latestPrices[k] || 0);
+    }
+    return t;
+}
+
+// Record one daily snapshot of total portfolio value (free, localStorage) → "am I up?" chart.
+function snapshotPortfolioValue(totalValue) {
+    if (!(totalValue > 0)) return null;
+    let hist = [];
+    try { hist = JSON.parse(localStorage.getItem('portfolio_history') || '[]') || []; } catch (e) { hist = []; }
+    const today = new Date().toISOString().slice(0, 10);
+    if (hist.length && hist[hist.length - 1].date === today) hist[hist.length - 1].value = round2(totalValue);
+    else hist.push({ date: today, value: round2(totalValue) });
+    if (hist.length > 120) hist = hist.slice(-120);
+    localStorage.setItem('portfolio_history', JSON.stringify(hist));
+    return hist;
+}
+
+// % change of portfolio value vs `days` ago (nearest earlier snapshot). null if not enough data.
+function perfSince(hist, days) {
+    if (!hist || hist.length < 2) return null;
+    const cur = hist[hist.length - 1].value;
+    const targetDate = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+    let base = null;
+    for (let i = hist.length - 1; i >= 0; i--) {
+        if (hist[i].date <= targetDate) { base = hist[i].value; break; }
+    }
+    if (base === null) base = hist[0].value;
+    if (!base) return null;
+    return ((cur - base) / base) * 100;
+}
+
+function renderPortfolioHistory(hist) {
+    const section = document.getElementById('portfolio-history-section');
+    if (!section) return;
+    if (!hist || hist.length < 2) { section.style.display = 'none'; return; }
+    section.style.display = '';
+
+    const setPerf = (id, days, label) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const p = perfSince(hist, days);
+        if (p === null) { el.textContent = `${label} —`; el.className = 'ph-perf'; return; }
+        el.textContent = `${label} ${p >= 0 ? '+' : ''}${p.toFixed(2)}%`;
+        el.className = 'ph-perf ' + (p >= 0 ? 'up' : 'down');
+    };
+    setPerf('ph-perf-1', 1, 'Bugün');
+    setPerf('ph-perf-7', 7, '7g');
+    setPerf('ph-perf-30', 30, '30g');
+
+    const el = document.getElementById('portfolio-history-chart');
+    if (!el || typeof Chart === 'undefined') return;
+    const labels = hist.map(h => new Date(h.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }));
+    const data = hist.map(h => h.value);
+    if (portfolioHistoryChart) {
+        portfolioHistoryChart.data.labels = labels;
+        portfolioHistoryChart.data.datasets[0].data = data;
+        portfolioHistoryChart.update('none');
+    } else {
+        portfolioHistoryChart = new Chart(el.getContext('2d'), {
+            type: 'line',
+            data: { labels, datasets: [{ data, borderColor: '#d4b572', borderWidth: 2, fill: true, backgroundColor: 'rgba(212,181,114,.10)', tension: 0.3, pointRadius: 0, pointHoverRadius: 5 }] },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => formatTRY(c.parsed.y) } } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#9aa0ab', font: { size: 8 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 } },
+                    y: { grid: { color: 'rgba(212,181,114,.12)' }, ticks: { color: '#9aa0ab', font: { size: 8 } } }
+                }
+            }
+        });
+    }
+}
 
 // Load from local storage
 function loadPortfolio() {
@@ -867,6 +947,10 @@ function renderPortfolio() {
     // Update Pie Chart
     updatePortfolioChart(chartLabels, chartValues, chartColors);
 
+    // Daily value snapshot + "am I up?" performance chart (retention: the daily return reason)
+    const valueHist = snapshotPortfolioValue(totalValue);
+    renderPortfolioHistory(valueHist);
+
     // AI Insights
     aiInsightCard.style.display = 'block';
     renderAIInsights(totalValue, finalChange);
@@ -981,8 +1065,10 @@ function renderAlarms() {
         itemRow.className = 'alarm-item';
         
         const condSymbol = alarm.condition === 'above' ? '≥' : '≤';
+        const label = alarm.assetCode === '__PORTFOLIO__' ? 'Toplam Portföy' : alarm.assetCode;
+        const recurBadge = alarm.recur ? ' <i class="fa-solid fa-repeat" title="Her gün tekrar uyarır" style="color: var(--accent, #d4b572);"></i>' : '';
         itemRow.innerHTML = `
-            <span class="alarm-item-text"><i class="fa-solid fa-bell"></i> ${alarm.assetCode} ${condSymbol} ${formatTRY(alarm.target)}</span>
+            <span class="alarm-item-text"><i class="fa-solid fa-bell"></i> ${label} ${condSymbol} ${formatTRY(alarm.target)}${recurBadge}</span>
             <button class="alarm-delete" onclick="deleteAlarm(${index})">
                 <i class="fa-solid fa-trash"></i>
             </button>
@@ -1017,46 +1103,44 @@ function addAlarm() {
         Notification.requestPermission();
     }
     
-    alarms.push({ assetCode, condition, target });
+    const recur = !!document.getElementById('alarm-recur')?.checked;
+    alarms.push({ assetCode, condition, target, recur, lastFired: null });
     saveAlarms();
     renderAlarms();
-    
+
     targetInput.value = '';
-    
-    // Show notification prompt confirmation
-    sendNotification('Alarm Kuruldu 🔔', `${assetCode} için ${condition === 'above' ? 'yükseliş' : 'düşüş'} yönlü ${target} ₺ fiyat alarmı kuruldu.`);
+    const recurEl = document.getElementById('alarm-recur');
+    if (recurEl) recurEl.checked = false;
+
+    const label = assetCode === '__PORTFOLIO__' ? 'Toplam portföy' : assetCode;
+    sendNotification('Alarm Kuruldu 🔔', `${label} için ${condition === 'above' ? 'yükseliş' : 'düşüş'} yönlü ${formatTRY(target)} alarmı kuruldu${recur ? ' (her gün tekrar)' : ''}.`);
 }
 
 function checkAlarms() {
     if (alarms.length === 0) return;
-    
-    let triggeredIndex = [];
-    
-    alarms.forEach((alarm, idx) => {
-        const price = latestPrices[alarm.assetCode];
-        if (!price) return;
-        
-        let isTriggered = false;
-        if (alarm.condition === 'above' && price >= alarm.target) {
-            isTriggered = true;
-        } else if (alarm.condition === 'below' && price <= alarm.target) {
-            isTriggered = true;
-        }
-        
-        if (isTriggered) {
-            sendNotification(
-                `Fiyat Alarmı Tetiklendi! ⚡`,
-                `${alarm.assetCode} değeri hedeflediğiniz ${alarm.target} ₺ seviyesine ulaştı! Güncel: ${price} ₺`
-            );
-            triggeredIndex.push(idx);
-        }
+    const today = new Date().toDateString();
+    let fired = false;
+    const remaining = [];
+
+    alarms.forEach((alarm) => {
+        const price = alarm.assetCode === '__PORTFOLIO__' ? portfolioTotalValue() : latestPrices[alarm.assetCode];
+        if (!price) { remaining.push(alarm); return; }
+        // Recurring alarms fire at most once per calendar day.
+        if (alarm.recur && alarm.lastFired === today) { remaining.push(alarm); return; }
+
+        const isTriggered = (alarm.condition === 'above' && price >= alarm.target) ||
+                            (alarm.condition === 'below' && price <= alarm.target);
+        if (!isTriggered) { remaining.push(alarm); return; }
+
+        const label = alarm.assetCode === '__PORTFOLIO__' ? 'Toplam portföy' : alarm.assetCode;
+        sendNotification('Fiyat Alarmı Tetiklendi! ⚡',
+            `${label} ${formatTRY(price)} — hedef ${formatTRY(alarm.target)} ${alarm.condition === 'above' ? 'üstü' : 'altı'}.`);
+        fired = true;
+        if (alarm.recur) { alarm.lastFired = today; remaining.push(alarm); } // keep, throttled to once/day
+        // non-recurring: dropped (one-shot)
     });
-    
-    if (triggeredIndex.length > 0) {
-        alarms = alarms.filter((_, idx) => !triggeredIndex.includes(idx));
-        saveAlarms();
-        renderAlarms();
-    }
+
+    if (fired) { alarms = remaining; saveAlarms(); renderAlarms(); }
 }
 
 function sendNotification(title, body) {

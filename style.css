@@ -1370,3 +1370,21 @@ header {
   text-transform: uppercase; color: var(--text-secondary, #9aa0ab); opacity: .55;
 }
 
+/* Portfolio value-history (the "am I up?" daily-return loop) */
+.portfolio-history-section { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border, rgba(255,255,255,.08)); }
+.ph-perf-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.ph-perf {
+  font-size: .74rem; font-weight: 600; border-radius: 8px; padding: 4px 10px;
+  color: var(--text-secondary, #9aa0ab); background: rgba(150,150,150,.10); border: 1px solid rgba(150,150,150,.2);
+}
+.ph-perf.up   { color: #1bbf72; background: rgba(27,191,114,.12);  border-color: rgba(27,191,114,.30); }
+.ph-perf.down { color: #ef5350; background: rgba(239,83,80,.12);   border-color: rgba(239,83,80,.30); }
+.portfolio-history-chart-wrap { height: 140px; }
+
+/* Recurring-alarm checkbox */
+.alarm-recur-label {
+  display: flex; align-items: center; gap: 8px; margin-top: 10px;
+  font-size: .8rem; color: var(--text-secondary, #9aa0ab); cursor: pointer;
+}
+.alarm-recur-label input { accent-color: var(--accent, #d4b572); cursor: pointer; }
+

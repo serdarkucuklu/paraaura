@@ -273,6 +273,15 @@
                                 <canvas id="portfolio-pie-chart"></canvas>
                             </div>
                         </div>
+                        <div class="portfolio-history-section" id="portfolio-history-section" style="display: none;">
+                            <div class="ph-perf-row">
+                                <span class="ph-perf" id="ph-perf-1">Bugün —</span>
+                                <span class="ph-perf" id="ph-perf-7">7g —</span>
+                                <span class="ph-perf" id="ph-perf-30">30g —</span>
+                            </div>
+                            <p class="section-subtitle" style="margin: 6px 0 4px;">Portföy değerin (₺) — günlük geçmiş</p>
+                            <div class="portfolio-history-chart-wrap"><canvas id="portfolio-history-chart"></canvas></div>
+                        </div>
                         <div class="portfolio-share-action" style="text-align: center; margin-top: 20px;">
                             <button id="share-portfolio-btn" class="share-btn"><i class="fa-solid fa-camera"></i> Görüntü Olarak Paylaş</button>
                         </div>
@@ -299,6 +308,7 @@
                             <option value="Gümüş">Gümüş (Gram)</option>
                             <option value="BTC">Bitcoin (BTC)</option>
                             <option value="ETH">Ethereum (ETH)</option>
+                            <option value="__PORTFOLIO__">Toplam Portföy (₺)</option>
                         </select>
                         <select id="alarm-condition-select" aria-label="Alarm koşulu">
                             <option value="above">Değer ≥</option>
@@ -307,6 +317,7 @@
                         <input type="number" id="alarm-target-input" aria-label="Hedef fiyat (₺)" placeholder="Hedef Fiyat (₺)" step="any">
                         <button id="set-alarm-btn"><i class="fa-solid fa-bell"></i> Kur</button>
                     </div>
+                    <label class="alarm-recur-label"><input type="checkbox" id="alarm-recur"> Tekrarla — her gün yeniden uyar (tek seferlik yerine)</label>
                     
                     <div class="alarms-list" id="alarms-list">
                         <!-- Dynamic active price alarms list -->
