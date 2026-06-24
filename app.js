@@ -29,6 +29,13 @@ let trendChartInstance = null;
 // Real-time tick data cache for '5D' timeframe (accrues ticks since page load)
 const tickDataCache = {};
 
+// ─── Real history (history.json) + retention state ──────────────────────────
+let historyData = null;                 // { points:[{ts, metals:{code:price}, banks_avg}], capped_days }
+const metalNameToCode = {};             // 'Gram Altın' -> 'Gram' (filled in renderMetalList)
+let watchlist = [];
+try { watchlist = JSON.parse(localStorage.getItem('watchlist') || '[]') || []; } catch (e) { watchlist = []; }
+const round2 = n => Math.round(n * 100) / 100;
+
 // Helper: Format price in Turkish Lira style
 function formatTRY(value) {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
@@ -184,8 +191,11 @@ function updateChart(assetName, price) {
     activeAsset = assetName;
     activeAssetPrice = price;
     chartTitleText.innerHTML = `<i class="fa-solid fa-chart-line"></i> ${assetName}`;
-    
-    const { labels, points } = generateTimeframeData(price, activeTimeframe);
+
+    // Prefer REAL accumulated history for metals (Saatlik/Günlük); otherwise estimated trend.
+    const realSeries = metalNameToCode[assetName] ? getRealMetalSeries(activeTimeframe) : null;
+    const { labels, points } = realSeries || generateTimeframeData(price, activeTimeframe);
+    setChartSourceBadge(!!realSeries);
     const ctx = document.getElementById('trend-chart').getContext('2d');
     
     if (trendChartInstance) {
@@ -338,6 +348,7 @@ function renderCurrencyList(items) {
             document.getElementById('trend-chart')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
 
+        addWatchStar(row, item.name);
         currencyList.appendChild(row);
         applyFlash(`curr_${item.code}`, item.price, row);
         if (isActive) {
@@ -370,6 +381,7 @@ async function fetchMetalsAndBanks() {
                 updateTimeText.textContent = `Son Güncelleme: ${rel} · Veriler anlık taranmaktadır`;
                 updateTimeText.title = date.toLocaleString('tr-TR');
             }
+            renderAnalysis(data.analysis); // "Günün Yorumu" card
         }
     } catch (err) {
         console.error("Error fetching metals/banks database: ", err);
@@ -385,12 +397,13 @@ async function fetchMetalsAndBanks() {
 function renderMetalList(items) {
     metalList.innerHTML = '';
     items.forEach(item => {
+        metalNameToCode[item.name] = item.code; // enables real-history charts + buy signal
         const priceNum = parseFloat(item.price.replace(/[^0-9.-]+/g, ""));
         if (!isNaN(priceNum)) {
             latestPrices[item.name] = priceNum;
             latestChanges[item.name] = item.change;
         }
-        
+
         const row = document.createElement('div');
         const isActive = activeAsset === item.name;
         row.className = `rate-row${isActive ? ' active' : ''}`;
@@ -399,10 +412,18 @@ function renderMetalList(items) {
         const changeIcon = item.change >= 0 ? 'fa-caret-up' : 'fa-caret-down';
         const displayPrice = isNaN(priceNum) ? item.price : formatTRY(priceNum);
 
+        // Buy-signal: current price within 2% of the real 30-day low.
+        let signalHtml = '';
+        const lo30 = metalLow(item.code, 30);
+        if (lo30 && !isNaN(priceNum) && priceNum <= lo30 * 1.02) {
+            signalHtml = `<span class="buy-signal" title="Son 30 günün en düşük seviyelerine yakın">🟢 30 günün dibinde</span>`;
+        }
+
         row.innerHTML = `
             <div class="rate-label-group">
                 <span class="rate-name">${item.name}</span>
                 <span class="rate-code">${item.code}</span>
+                ${signalHtml}
             </div>
             <div class="rate-value-group">
                 <span class="rate-price">${displayPrice}</span>
@@ -411,6 +432,7 @@ function renderMetalList(items) {
                 </span>
             </div>
         `;
+        addWatchStar(row, item.name);
 
         row.addEventListener('click', () => {
             document.querySelectorAll('.rate-row, .bank-row').forEach(r => r.classList.remove('active'));
@@ -437,11 +459,25 @@ function renderBankList(items) {
         
         const buyNum = parseFloat(item.buy.toString().replace(/[^0-9.-]+/g, ""));
         const sellNum = parseFloat(item.sell.toString().replace(/[^0-9.-]+/g, ""));
+        const spread = (!isNaN(buyNum) && !isNaN(sellNum)) ? (sellNum - buyNum) : null;
+
+        // Show the stored daily change % (was collected but never displayed).
+        let changeBadge = '';
+        if (item.change !== undefined && item.change !== null && item.change !== '') {
+            const ch = parseFloat(item.change);
+            if (!isNaN(ch)) {
+                const cls = ch >= 0 ? 'up' : 'down';
+                const ic = ch >= 0 ? 'fa-caret-up' : 'fa-caret-down';
+                changeBadge = `<span class="rate-change ${cls} bank-change"><i class="fa-solid ${ic}"></i> ${formatPercent(ch)}</span>`;
+            }
+        }
+        const spreadText = spread !== null ? `Makas: ${formatTRY(spread)}` : 'Gram Altın Makas';
 
         row.innerHTML = `
             <div class="rate-label-group">
                 <span class="rate-name">${item.name}</span>
-                <span class="rate-code">Gram Altın Makas</span>
+                <span class="rate-code">${spreadText}</span>
+                ${changeBadge}
             </div>
             <span class="bank-price-buy">${formatTRY(buyNum)}</span>
             <span class="bank-price-sell">${formatTRY(sellNum)}</span>
@@ -544,6 +580,7 @@ function renderCryptoList(items) {
             document.getElementById('trend-chart')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
 
+        addWatchStar(row, item.name);
         cryptoList.appendChild(row);
         applyFlash(`crypto_${item.code}`, item.price, row);
         if (isActive) {
@@ -597,6 +634,7 @@ async function updateFeeds() {
     
     updateChart(activeAsset, activeAssetPrice);
     renderPortfolio();
+    renderWatchlist();
     checkAlarms();
     updateHeaderTickers();
     updateDynamicTitle();
@@ -1071,6 +1109,160 @@ function renderAIInsights(totalValue, finalChange) {
 }
 
 
+// ─── Real history, watchlist, streak, analysis & buy-signal ─────────────────
+
+// Load accumulated real price history (built hourly by agent.py). Charts degrade gracefully if absent.
+async function fetchHistory() {
+    try {
+        const res = await fetch('history.json?_h=' + Math.floor(Date.now() / 3600000));
+        if (res.ok) {
+            const h = await res.json();
+            if (h && Array.isArray(h.points)) historyData = h;
+        }
+    } catch (e) { /* history is optional */ }
+}
+
+// Build a REAL price series for the active metal from history. Returns {labels,points} or null.
+function getRealMetalSeries(timeframe) {
+    if (!historyData || !Array.isArray(historyData.points)) return null;
+    const code = metalNameToCode[activeAsset];
+    if (!code) return null;
+    const series = [];
+    for (const p of historyData.points) {
+        const v = p.metals && p.metals[code];
+        if (typeof v === 'number') series.push([new Date(p.ts), v]);
+    }
+    if (series.length < 3) return null;
+
+    if (timeframe === '1s') { // Saatlik — son 24 saat
+        const cutoff = Date.now() - 24 * 3600 * 1000;
+        const pts = series.filter(s => s[0].getTime() >= cutoff);
+        if (pts.length < 3) return null;
+        return {
+            labels: pts.map(s => s[0].toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })),
+            points: pts.map(s => round2(s[1]))
+        };
+    }
+    if (timeframe === '1g') { // Günlük — gün başına son değer, son 30 gün
+        const byDay = new Map();
+        for (const [d, v] of series) byDay.set(d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }), v);
+        const entries = Array.from(byDay.entries()).slice(-30);
+        if (entries.length < 3) return null;
+        return { labels: entries.map(e => e[0]), points: entries.map(e => round2(e[1])) };
+    }
+    return null; // Haftalık/Aylık/10y: 90 günlük tampon yeterince birikene kadar tahmini
+}
+
+// Lowest price of a metal over the last `days` days (for the buy-signal). null if insufficient history.
+function metalLow(code, days) {
+    if (!historyData || !Array.isArray(historyData.points) || historyData.points.length < 10) return null;
+    const cutoff = Date.now() - days * 86400 * 1000;
+    let lo = Infinity;
+    for (const p of historyData.points) {
+        const v = p.metals && p.metals[code];
+        if (typeof v === 'number' && new Date(p.ts).getTime() >= cutoff) lo = Math.min(lo, v);
+    }
+    return lo === Infinity ? null : lo;
+}
+
+// Set the honest "real vs estimated" chart data-source badge.
+function setChartSourceBadge(isReal) {
+    const el = document.getElementById('chart-source-badge');
+    if (!el) return;
+    if (isReal) {
+        el.className = 'chart-source-badge real';
+        el.innerHTML = '<i class="fa-solid fa-circle-check"></i> Gerçek geçmiş veri';
+    } else {
+        el.className = 'chart-source-badge est';
+        el.innerHTML = '<i class="fa-solid fa-circle-info"></i> Tahmini eğilim — gerçek geçmiş birikiyor';
+    }
+}
+
+// Add a ⭐ watchlist toggle to a rate row (prepended as a left gutter).
+function addWatchStar(row, name) {
+    const active = watchlist.includes(name);
+    const star = document.createElement('button');
+    star.className = 'watch-star' + (active ? ' active' : '');
+    star.innerHTML = `<i class="fa-${active ? 'solid' : 'regular'} fa-star"></i>`;
+    star.title = active ? 'Takipten çıkar' : 'Takip listesine ekle';
+    star.setAttribute('aria-label', star.title);
+    star.addEventListener('click', (e) => { e.stopPropagation(); toggleWatch(name); });
+    row.insertBefore(star, row.firstChild);
+}
+
+function toggleWatch(name) {
+    const i = watchlist.indexOf(name);
+    if (i >= 0) watchlist.splice(i, 1); else watchlist.push(name);
+    localStorage.setItem('watchlist', JSON.stringify(watchlist));
+    // refresh stars in place
+    document.querySelectorAll('.rate-row').forEach(r => {
+        const n = r.querySelector('.rate-name')?.textContent.trim();
+        const s = r.querySelector('.watch-star');
+        if (n && s) {
+            const on = watchlist.includes(n);
+            s.className = 'watch-star' + (on ? ' active' : '');
+            s.innerHTML = `<i class="fa-${on ? 'solid' : 'regular'} fa-star"></i>`;
+            s.title = on ? 'Takipten çıkar' : 'Takip listesine ekle';
+        }
+    });
+    renderWatchlist();
+    if (window.NobleVision) NobleVision.toast(i >= 0 ? 'Takipten çıkarıldı' : 'Takip listesine eklendi ⭐', i >= 0 ? 'info' : 'up');
+}
+
+// Render the pinned "Takip Listem" card from live values shown in the main lists.
+function renderWatchlist() {
+    const card = document.getElementById('watchlist-card');
+    const list = document.getElementById('watchlist-list');
+    if (!card || !list) return;
+    if (!watchlist.length) { card.style.display = 'none'; return; }
+    card.style.display = '';
+    list.innerHTML = '';
+    const rows = Array.from(document.querySelectorAll('.left-column .rate-row, .right-column .rate-row'))
+        .filter(r => !r.closest('#watchlist-list'));
+    watchlist.forEach(name => {
+        const src = rows.find(r => r.querySelector('.rate-name')?.textContent.trim() === name);
+        const valHtml = src ? (src.querySelector('.rate-value-group')?.innerHTML || '') : '<span class="rate-price">—</span>';
+        const row = document.createElement('div');
+        row.className = 'rate-row';
+        row.innerHTML = `
+            <div class="rate-label-group"><span class="rate-name">${name}</span><span class="rate-code">Takip</span></div>
+            <div class="rate-value-group">${valHtml}</div>`;
+        const star = document.createElement('button');
+        star.className = 'watch-star active';
+        star.innerHTML = '<i class="fa-solid fa-star"></i>';
+        star.title = 'Takipten çıkar';
+        star.addEventListener('click', (e) => { e.stopPropagation(); toggleWatch(name); });
+        row.insertBefore(star, row.firstChild);
+        row.addEventListener('click', () => window.selectAssetByName(name));
+        list.appendChild(row);
+    });
+}
+
+// Daily visit streak (habit loop).
+function updateStreak() {
+    const today = new Date().toDateString();
+    const last = localStorage.getItem('last_visit');
+    let streak = parseInt(localStorage.getItem('visit_streak') || '0', 10) || 0;
+    if (last !== today) {
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        streak = (last === yesterday) ? streak + 1 : 1;
+        localStorage.setItem('visit_streak', String(streak));
+        localStorage.setItem('last_visit', today);
+        if (window.NobleVision) NobleVision.toast(`🔥 ${streak} gün üst üste! Takipte kal.`, 'up');
+    }
+    const pill = document.getElementById('streak-pill');
+    if (pill) { pill.innerHTML = `🔥 ${streak} gün`; pill.style.display = streak > 0 ? '' : 'none'; }
+}
+
+// Render the daily AI market commentary ("Günün Yorumu").
+function renderAnalysis(text) {
+    const card = document.getElementById('analysis-card');
+    const el = document.getElementById('analysis-text');
+    if (!card || !el) return;
+    if (text && String(text).trim()) { el.textContent = String(text).trim(); card.style.display = ''; }
+    else { card.style.display = 'none'; }
+}
+
 // Initialize application
 async function initApp() {
     // Show skeleton placeholders while first data loads (replaced on render).
@@ -1091,6 +1283,8 @@ async function initApp() {
     });
 
     initTimeframeControls();
+    await fetchHistory();   // real price history for charts + buy signal
+    updateStreak();         // daily visit streak (habit loop)
     loadPortfolio();
     loadAlarms();
     renderAlarms();
@@ -1174,9 +1368,12 @@ async function initApp() {
     await updateFeeds();
     updateChart(activeAsset, activeAssetPrice);
     renderPortfolio();
-    
+    renderWatchlist();
+
     // Polling rate update every 10s (silent, no layout shift or countdown texts)
     setInterval(updateFeeds, 10000);
+    // Refresh accumulated history hourly (matches the agent's cron cadence).
+    setInterval(fetchHistory, 3600 * 1000);
 }
 
 initApp();

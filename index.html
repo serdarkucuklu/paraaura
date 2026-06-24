@@ -44,6 +44,18 @@
     <!-- html2canvas CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
+    <!-- Open Graph / Twitter Card (paylaşım kalitesi) -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="ParaAura">
+    <meta property="og:title" content="ParaAura | Canlı Döviz, Kapalıçarşı Altın ve Banka Makas Aralıkları">
+    <meta property="og:description" content="Canlı altın, döviz ve kripto fiyatları, banka gram altın makasları, fiyat alarmı ve portföy takibi — tek panoda.">
+    <meta property="og:url" content="https://paraaura.vercel.app/">
+    <meta property="og:image" content="https://paraaura.vercel.app/icons/icon-512.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ParaAura | Canlı Döviz & Altın">
+    <meta name="twitter:description" content="Canlı altın/döviz/kripto, banka makasları, fiyat alarmı, portföy takibi ve günlük piyasa yorumu.">
+    <meta name="twitter:image" content="https://paraaura.vercel.app/icons/icon-512.png">
+
     <!-- Google AdSense (Yeni Hesap) -->
     <meta name="google-adsense-account" content="ca-pub-9351400259394108">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9351400259394108" crossorigin="anonymous"></script>
@@ -134,6 +146,16 @@
                     </div>
                 </div>
 
+                <!-- Takip Listem (Watchlist) — boşken gizli -->
+                <div class="glass-card watchlist-card" id="watchlist-card" style="display: none;">
+                    <div class="watchlist-header">
+                        <h3 class="section-title"><i class="fa-solid fa-star" style="color: var(--accent-gold);"></i> Takip Listem</h3>
+                        <span class="streak-pill" id="streak-pill" style="display: none;"></span>
+                    </div>
+                    <p class="section-subtitle">Yıldızladığın varlıklar burada — canlı fiyatlarıyla</p>
+                    <div class="rates-list" id="watchlist-list"></div>
+                </div>
+
                 <!-- Döviz Kurları -->
                 <div class="glass-card">
                     <h3 class="section-title"><i class="fa-solid fa-dollar-sign"></i> Döviz Kurları</h3>
@@ -164,10 +186,31 @@
                         <span class="banner-text">Kripto alım-satım işlemlerinde %20 komisyon indirimi kazanmak için <a href="https://www.trbinance.com/account/signup?ref=REFERRAL_PLACEHOLDER" target="_blank" rel="noopener">Binance TR'ye Üye Olun</a>.</span>
                     </div>
                 </div>
+
+                <!-- AdSense in-content reklam birimi.
+                     NOT: data-ad-slot değerini AdSense panelinde "Görüntülü reklam" birimi
+                     oluşturup oradaki slot ID ile DEĞİŞTİRİN (PLACEHOLDER_SLOT_ID). -->
+                <div class="glass-card ad-card" aria-label="Reklam">
+                    <span class="ad-label">Reklam</span>
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="ca-pub-9351400259394108"
+                         data-ad-slot="PLACEHOLDER_SLOT_ID"
+                         data-ad-format="auto"
+                         data-full-width-responsive="true"></ins>
+                    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+                </div>
             </section>
 
             <!-- RIGHT COLUMN: Chart, Banks & Bookshelf -->
             <section class="right-column">
+                <!-- Günün Yorumu (AI) — boşken gizli -->
+                <div class="glass-card analysis-card" id="analysis-card" style="display: none;">
+                    <h3 class="section-title"><i class="fa-solid fa-newspaper" style="color: var(--accent-gold);"></i> Günün Piyasa Yorumu</h3>
+                    <p class="section-subtitle">Yapay zekânın güncel altın, döviz ve makas hareketleri üzerine günlük özeti</p>
+                    <div class="analysis-content" id="analysis-text"></div>
+                </div>
+
                 <!-- Trend Chart Card -->
                 <div class="glass-card">
                     <div class="chart-header">
@@ -181,7 +224,7 @@
                             <button class="timeframe-btn" role="tab" aria-selected="false" data-range="10y">10 Yıllık</button>
                         </div>
                     </div>
-                    <p class="section-subtitle" style="margin-top:-10px;">Eğilim Analizi (Varlık seçmek için soldaki tablodan üzerine tıklayabilirsiniz)</p>
+                    <p class="section-subtitle" style="margin-top:-10px;">Eğilim Analizi (Varlık seçmek için soldaki tablodan üzerine tıklayabilirsiniz) <span id="chart-source-badge" class="chart-source-badge est"></span></p>
                     <div class="chart-container">
                         <canvas id="trend-chart"></canvas>
                     </div>

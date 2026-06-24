@@ -2,8 +2,8 @@ name: ParaAura Autonomous Agent
 
 on:
   schedule:
-    # Runs every 4 hours
-    - cron: '0 */4 * * *'
+    # Runs hourly (intraday freshness + builds real price history)
+    - cron: '0 * * * *'
   workflow_dispatch: # Allows manual trigger
 
 jobs:
