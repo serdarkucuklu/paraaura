@@ -10,33 +10,37 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="stylesheet" media="print" onload="this.media='all'" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
   <meta name="google-adsense-account" content="ca-pub-9351400259394108">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9351400259394108" crossorigin="anonymous"></script>
+
+  <!-- Open Graph / Twitter (paylaşım kalitesi) -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Paran eridi mi? — ParaGraf enflasyon simülatörü">
+  <meta property="og:description" content="Geçmişteki paranın bugünkü gerçek değerini altın, dolar, ekmek ve asgari ücret cinsinden gör.">
+  <meta property="og:url" content="https://kuraura.com.tr/paragraf/">
+  <meta name="twitter:card" content="summary_large_image">
+
   <link rel="stylesheet" href="../vendor/nvds/tokens.css">
   <link rel="stylesheet" href="../vendor/nvds/ds.css">
   <link rel="stylesheet" href="../vendor/nvds/icons.css">
   <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="paragraf.css?v=1">
   <meta name="theme-color" content="#0d0f13">
   <style>
-    body{background:var(--bg);color:var(--text);font-family:var(--font-sans);margin:0;min-height:100vh}
-    .pg-wrap{max-width:760px;margin:0 auto;padding:var(--sp-5)}
-    .pg-title{font-family:var(--font-serif);font-size:var(--fs-2xl);margin:0 0 var(--sp-2)}
-    .pg-sub{color:var(--text-muted);margin:0 0 var(--sp-5)}
-    .pg-num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
-    .pg-row{display:flex;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-2) 0;border-bottom:1px solid var(--border)}
-    .pg-controls{display:flex;flex-direction:column;gap:var(--sp-3);margin-bottom:var(--sp-5)}
-    .pg-note{font-size:var(--fs-xs);color:var(--text-muted);margin-top:var(--sp-4)}
     /* Paylasim karti (1080x1350 4:5). position:absolute -> html2canvas ekran-disi yakalayabilir
        (position:fixed off-screen html2canvas'te bos/bozuk capture'a yol acar). */
     #share-card{position:absolute;left:-9999px;top:0;width:1080px;height:1350px;background:var(--bg);
       color:var(--text);padding:80px;box-sizing:border-box;font-family:var(--font-sans);
       display:flex;flex-direction:column;background-image:radial-gradient(900px 500px at 80% -10%, rgba(212,181,114,.10), transparent 60%)}
     #share-card .sc-eyebrow{font-family:var(--font-mono);font-size:28px;letter-spacing:.32em;color:var(--accent);text-transform:uppercase;margin-bottom:26px}
-    #share-card .sc-title{font-family:var(--font-serif);font-size:92px;line-height:1;margin:0 0 14px}
+    #share-card .sc-title{font-family:var(--font-serif);font-size:92px;line-height:1;margin:0 0 14px;font-weight:600}
     #share-card .sc-amount{font-family:var(--font-serif);font-size:50px;color:var(--text-muted);margin:0}
     #share-card .sc-hero{margin:60px 0 52px;border-top:2px solid var(--border);border-bottom:2px solid var(--border);padding:46px 0}
     #share-card .sc-hero .sc-hl{font-family:var(--font-mono);font-size:36px;color:var(--text-muted);margin-bottom:10px}
-    #share-card .sc-hero .sc-big{font-family:var(--font-serif);font-size:104px;color:var(--accent);line-height:1.02}
+    #share-card .sc-hero .sc-big{font-family:var(--font-serif);font-size:104px;color:var(--accent);line-height:1.02;font-weight:700}
     #share-card .sc-lines{flex:1}
     #share-card .sc-line{font-family:var(--font-mono);font-size:46px;margin:30px 0;display:flex;justify-content:space-between;gap:24px}
     #share-card .sc-line b{color:#fff}
@@ -48,33 +52,102 @@
 <body>
   <a class="nv-skip-link" href="#main">İçeriğe geç</a>
   <main id="main" class="pg-wrap">
-    <h1 class="pg-title">Paran <span style="color:var(--accent)">eridi mi?</span></h1>
-    <p class="pg-sub">Geçmişteki paranı bugün altın, dolar, ekmek ve asgari ücret cinsinden gör.</p>
+    <header class="pg-hero">
+      <p class="pg-eyebrow">Enflasyon Simülatörü</p>
+      <h1 class="pg-title">Paran <em>eridi mi?</em></h1>
+      <p class="pg-sub">Geçmişteki paranın bugünkü gerçek değerini altın, dolar, ekmek ve asgari ücret cinsinden gör.</p>
+    </header>
 
-    <div class="nv-card" style="padding:var(--sp-5);margin-bottom:var(--sp-5)">
+    <!-- Kontroller -->
+    <section class="pg-card">
       <div class="pg-controls">
-        <label>Yıl: <strong id="yil-label" class="pg-num">2015</strong>
-          <input type="range" id="yil-input" min="2005" max="2025" value="2015" step="1" class="volume-slider" style="width:100%">
-        </label>
-        <label>Tutar (TL)
-          <input type="number" id="tutar-input" class="nv-input" value="1000" min="1" step="any" aria-label="Tutar (TL)">
-        </label>
+        <div>
+          <label class="pg-field-label" for="tutar-input">Ne kadar paran vardı?</label>
+          <div class="pg-amount-row">
+            <input type="number" id="tutar-input" class="pg-amount-input" value="1000" min="1" step="any" inputmode="numeric" aria-label="Tutar (TL)">
+            <div class="pg-chips" id="amount-chips" role="group" aria-label="Hızlı tutar seçimi">
+              <button type="button" class="pg-chip" data-amount="1000">₺1.000</button>
+              <button type="button" class="pg-chip" data-amount="5000">₺5.000</button>
+              <button type="button" class="pg-chip" data-amount="10000">₺10.000</button>
+              <button type="button" class="pg-chip" data-amount="100000">₺100.000</button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="pg-year-head">
+            <span class="pg-field-label" style="margin:0">Hangi yıldan?</span>
+            <span class="pg-year-big" id="yil-label">2015</span>
+          </div>
+          <input type="range" id="yil-input" min="2005" max="2025" value="2015" step="1" class="pg-year-slider" aria-label="Yıl seç">
+          <div class="pg-chips" id="year-chips" role="group" aria-label="Hızlı yıl seçimi">
+            <button type="button" class="pg-chip" data-year="2005">2005</button>
+            <button type="button" class="pg-chip" data-year="2010">2010</button>
+            <button type="button" class="pg-chip" data-year="2015">2015</button>
+            <button type="button" class="pg-chip" data-year="2020">2020</button>
+            <button type="button" class="pg-chip" data-year="2025">2025</button>
+          </div>
+        </div>
       </div>
+    </section>
 
-      <div id="sonuc-gecmis"></div>
-      <div id="sonuc-bugun" style="margin-top:var(--sp-4)"></div>
-      <div id="deger-koruma" style="margin-top:var(--sp-4)"></div>
+    <!-- Hero reveal: çarpıcı stat -->
+    <section class="pg-card pg-animate-in">
+      <div class="pg-reveal">
+        <p class="pg-reveal-label" id="reveal-label">O paranın bugünkü gerçek değeri</p>
+        <div class="pg-reveal-big pg-num" id="reveal-big">₺0</div>
+        <span class="pg-reveal-pct pg-num" id="reveal-pct">—</span>
+        <div class="pg-reveal-secondary">
+          <div class="pg-prot">
+            <span class="pg-prot-label">🪙 Altında saklasaydın bugün</span>
+            <span class="pg-prot-val pg-num" id="prot-gold">₺0</span>
+            <span class="pg-prot-pct pg-num" id="prot-gold-pct"></span>
+          </div>
+          <div class="pg-prot">
+            <span class="pg-prot-label">💵 Dolarda saklasaydın bugün</span>
+            <span class="pg-prot-val pg-num" id="prot-usd">₺0</span>
+            <span class="pg-prot-pct pg-num" id="prot-usd-pct"></span>
+          </div>
+        </div>
+      </div>
+    </section>
 
-      <div style="margin-top:var(--sp-5);height:240px"><canvas id="paragraf-chart"></canvas></div>
+    <!-- Sonuç kartları -->
+    <section class="pg-card">
+      <h2 class="pg-results-title" id="results-title">Aynı parayla o zaman → bugün ne alırsın?</h2>
+      <div class="pg-results" id="results-grid"></div>
+    </section>
 
-      <button id="share-btn" class="nv-btn nv-btn--primary" style="margin-top:var(--sp-5)">
-        <i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Paylaş / İndir
+    <!-- Grafik -->
+    <section class="pg-card">
+      <h2 class="pg-results-title" id="chart-title">Paranın gram altın cinsinden erimesi</h2>
+      <div class="pg-chart-wrap"><canvas id="paragraf-chart"></canvas></div>
+    </section>
+
+    <!-- Paylaş -->
+    <section class="pg-card">
+      <button id="share-btn" class="pg-share-btn" type="button">
+        <i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Sonucu Paylaş / İndir
       </button>
       <p class="pg-note">≈ Yaklaşık yıllık ortalama değerlerdir; bilgilendirme amaçlıdır. kuraura.com.tr/paragraf</p>
+    </section>
+
+    <!-- AdSense in-content (data-ad-slot PLACEHOLDER — AdSense panelinden gerçek birim id'si ile değiştir) -->
+    <div class="pg-card pg-ad-card" aria-label="Reklam">
+      <span class="pg-ad-label">Reklam</span>
+      <ins class="adsbygoogle" style="display:block;width:100%"
+           data-ad-client="ca-pub-9351400259394108"
+           data-ad-slot="PLACEHOLDER_SLOT_ID"
+           data-ad-format="auto" data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
+
+    <!-- Funnel: kuraura ana sayfaya -->
+    <a class="pg-funnel" href="https://kuraura.com.tr/">
+      <i class="fa-solid fa-chart-line" aria-hidden="true"></i> Canlı altın, döviz &amp; banka makas takibi → kuraura.com.tr
+    </a>
   </main>
 
-  <!-- Paylasim karti -->
+  <!-- Paylasim karti (html2canvas ile 1080x1350 PNG'ye dönüşür) -->
   <div id="share-card">
     <div>
       <div class="sc-eyebrow">Paran eridi mi?</div>
@@ -92,8 +165,23 @@
     </div>
   </div>
 
+  <!-- Paylaş önizleme modalı (her ortamda görseli teslim eden indir/paylaş çözümü) -->
+  <div class="pg-modal-overlay" id="pg-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="pg-modal-title">
+    <div class="pg-modal" id="pg-modal">
+      <button class="pg-modal-close" id="pg-modal-close" type="button" aria-label="Kapat">&times;</button>
+      <h3 class="pg-modal-title" id="pg-modal-title">Kartın hazır 🎉</h3>
+      <img class="pg-modal-img" id="pg-modal-img" alt="ParaGraf paylaşım kartı önizlemesi">
+      <div class="pg-modal-actions">
+        <a class="pg-modal-btn pg-modal-btn--primary" id="pg-modal-download" download="paragraf.png" href="#"><i class="fa-solid fa-download" aria-hidden="true"></i> Görseli İndir</a>
+        <button class="pg-modal-btn pg-modal-btn--ghost" id="pg-modal-share" type="button" style="display:none;"><i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Paylaş</button>
+        <button class="pg-modal-btn pg-modal-btn--ghost" id="pg-modal-open" type="button"><i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i> Yeni sekmede aç</button>
+      </div>
+      <p class="pg-modal-hint" id="pg-modal-hint">İndir butonu çalışmazsa görsele <b>uzun bas</b> → "Görseli kaydet".</p>
+    </div>
+  </div>
+
   <script src="../vendor/nvds/ds.js"></script>
-  <script src="calc.js?v=4"></script>
-  <script src="paragraf.js?v=6" defer></script>
+  <script src="calc.js?v=5"></script>
+  <script src="paragraf.js?v=7" defer></script>
 </body>
 </html>
