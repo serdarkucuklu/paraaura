@@ -1388,3 +1388,91 @@ header {
 }
 .alarm-recur-label input { accent-color: var(--accent, #d4b572); cursor: pointer; }
 
+
+/* ── Hızlı Çevirici (converter) ─────────────────────────────────────────── */
+.converter-card .converter-row {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr auto 1.2fr;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+}
+.converter-row input,
+.converter-row select {
+  background: var(--surface-2, #17181d);
+  color: var(--text, #e9e6df);
+  border: 1px solid var(--border, #2a2b31);
+  border-radius: var(--radius-md, 8px);
+  padding: 10px 12px;
+  font-size: .9rem;
+  min-width: 0;
+  font-family: inherit;
+}
+.converter-row input:focus,
+.converter-row select:focus {
+  outline: none;
+  border-color: var(--accent, #d4b572);
+  box-shadow: 0 0 0 2px rgba(212,181,114,.20);
+}
+#conv-swap {
+  background: var(--surface-2, #17181d);
+  color: var(--accent, #d4b572);
+  border: 1px solid var(--border, #2a2b31);
+  border-radius: var(--radius-md, 8px);
+  width: 40px; height: 40px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .3s ease, border-color .15s, color .15s;
+}
+#conv-swap:hover { border-color: var(--accent, #d4b572); transform: rotate(180deg); }
+.converter-result {
+  margin-top: 14px;
+  text-align: center;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-gold, #d4b572);
+  letter-spacing: .3px;
+  min-height: 1.6em;
+}
+.converter-result strong { font-weight: 700; }
+.conv-share {
+  display: block; width: 100%; margin-top: 12px;
+  background: transparent;
+  color: var(--accent-gold, #d4b572);
+  border: 1px solid var(--border, #2a2b31);
+  border-radius: var(--radius-md, 8px);
+  padding: 9px 12px; font-size: .82rem; font-weight: 600; cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.conv-share:hover { background: rgba(212,181,114,.08); border-color: var(--accent, #d4b572); }
+
+@media (max-width: 520px) {
+  .converter-card .converter-row { grid-template-columns: 1fr 1fr; }
+  #conv-swap { grid-column: 1 / -1; width: 100%; }
+}
+
+/* ── Canlı (live) freshness dot ─────────────────────────────────────────── */
+.live-dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: #1bbf72; margin-right: 6px; vertical-align: middle;
+  box-shadow: 0 0 0 0 rgba(27,191,114,.6);
+  animation: live-pulse 1.8s ease-out infinite;
+}
+@keyframes live-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(27,191,114,.55); }
+  70%  { box-shadow: 0 0 0 7px rgba(27,191,114,0); }
+  100% { box-shadow: 0 0 0 0 rgba(27,191,114,0); }
+}
+@media (prefers-reduced-motion: reduce) { .live-dot { animation: none; } }
+
+/* ── En dar makas (best bank spread) ────────────────────────────────────── */
+.bank-row.best-spread {
+  background: linear-gradient(90deg, rgba(27,191,114,.10), transparent 70%);
+  border-left: 3px solid #1bbf72;
+}
+.best-spread-badge {
+  display: inline-block; width: fit-content; margin-top: 3px;
+  font-size: .64rem; font-weight: 700; color: #1bbf72;
+  background: rgba(27,191,114,.12); border: 1px solid rgba(27,191,114,.30);
+  border-radius: 6px; padding: 1px 6px;
+}

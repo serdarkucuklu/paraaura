@@ -36,6 +36,16 @@ let watchlist = [];
 try { watchlist = JSON.parse(localStorage.getItem('watchlist') || '[]') || []; } catch (e) { watchlist = []; }
 const round2 = n => Math.round(n * 100) / 100;
 
+// ─── Live gold anchor ───────────────────────────────────────────────────────
+// The core value prop (gold prices) previously came ONLY from rates.json, which
+// is populated by an LLM (agent.py) and goes stale when the cron misses a run.
+// PAXG (pax-gold) on CoinGecko is a CORS-friendly, real-market token where
+// 1 PAXG = 1 fine troy ounce of physical gold — so it gives us a LIVE, accurate
+// gold anchor to keep every gold figure fresh regardless of rates.json age.
+const TROY_OUNCE_G = 31.1034768;
+let liveGold = null;        // { onsTRY, gramTRY, change } or null when unavailable
+let goldIsLive = false;     // true once a live anchor has been applied this session
+
 // Helper: Format price in Turkish Lira style
 function formatTRY(value) {
     return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
@@ -162,6 +172,84 @@ function generateTimeframeData(basePrice, timeframe) {
     return { labels, points };
 }
 
+// ─── Real historical series engine ──────────────────────────────────────────
+// Replaces the synthetic seeded-random trend with REAL market history:
+//   • Gold (all variants) ← CoinGecko pax-gold market_chart (1 PAXG = 1 oz), anchor-scaled
+//     to the displayed price so it fits gram / çeyrek / ons automatically.
+//   • Crypto ← that coin's own market_chart (exact).
+//   • Currencies ← Frankfurter (ECB) daily history.
+// Raw series are cached and scaled SYNCHRONOUSLY on each render (no flicker on the 10s tick);
+// a background prefetch refreshes the cache. Falls back to synthetic (honest "Tahmini" badge).
+const _chartCache = {};                    // key -> { ts, prices:[[ms, price], ...] }
+const _inflight = {};                       // key -> true while a fetch is running (dedupe)
+const CG_TF_DAYS = { '1s': 1, '1g': 30, '1h': 90, '1a': 365, '10y': 'max' };
+// Everything is fetched from CoinGecko's market_chart (CORS-friendly, single provider).
+// Currencies use their fiat-pegged tokens: USDT/TRY ≈ USD/TRY, EURC/TRY ≈ EUR/TRY.
+// (Free FX history APIs — frankfurter, exchangerate.host — are CORS-blocked, so unusable client-side.)
+function _cgCoinForAsset(name) {
+    if (['Gram Altın', 'Kapalı Çarşı Gram Altın', 'Çeyrek Altın', 'Ons Altın'].includes(name)) return 'pax-gold';
+    if (name === 'Bitcoin') return 'bitcoin';
+    if (name === 'Ethereum') return 'ethereum';
+    if (name === 'Solana') return 'solana';
+    if (name === 'Amerikan Doları') return 'tether';   // USDT/TRY ≈ USD/TRY
+    if (name === 'Euro') return 'euro-coin';            // EURC/TRY ≈ EUR/TRY
+    return null;
+}
+function _seriesKey(assetName, tf) {
+    const coin = _cgCoinForAsset(assetName), days = CG_TF_DAYS[tf];
+    if (!coin || !days) return null;
+    return { key: coin + '_' + days, id: coin, days };
+}
+function _downsample(prices, n) {
+    if (prices.length <= n) return prices;
+    const step = (prices.length - 1) / (n - 1);
+    const out = [];
+    for (let i = 0; i < n; i++) out.push(prices[Math.round(i * step)]);
+    return out;
+}
+function _seriesLabel(ms, tf) {
+    const d = new Date(ms);
+    if (tf === '1s') return d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    if (tf === '1g' || tf === '1h') return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+    if (tf === '1a') return d.toLocaleDateString('tr-TR', { month: 'short', year: '2-digit' });
+    return d.getFullYear().toString(); // 10y
+}
+// SYNC: build a real {labels, points} from cached raw prices, anchor-scaled to displayedPrice.
+function getLiveSeries(assetName, tf, displayedPrice) {
+    if (tf === '5dk') return null;
+    const meta = _seriesKey(assetName, tf);
+    if (!meta) return null;
+    const c = _chartCache[meta.key];
+    if (!c || !c.prices || c.prices.length < 3) return null;
+    const last = c.prices[c.prices.length - 1][1];
+    const scale = (displayedPrice && last) ? displayedPrice / last : 1;
+    const ds = _downsample(c.prices, tf === '1s' ? 48 : 36);
+    return {
+        labels: ds.map(p => _seriesLabel(p[0], tf)),
+        points: ds.map((p, i) => (i === ds.length - 1 && displayedPrice) ? round2(displayedPrice) : round2(p[1] * scale))
+    };
+}
+// ASYNC: fetch raw history into the cache, then re-render once if still viewing this asset/timeframe.
+async function prefetchLiveSeries(assetName, tf) {
+    if (tf === '5dk') return;
+    const meta = _seriesKey(assetName, tf);
+    if (!meta) return;
+    const c = _chartCache[meta.key];
+    if (c && Date.now() - c.ts < 600000) return; // cache fresh (10 min)
+    if (_inflight[meta.key]) return;              // dedupe concurrent fetches (rate-limit friendly)
+    _inflight[meta.key] = true;
+    try {
+        const res = await fetch(`https://api.coingecko.com/api/v3/coins/${meta.id}/market_chart?vs_currency=try&days=${meta.days}`);
+        if (!res.ok) throw new Error('cg ' + res.status);
+        const d = await res.json();
+        const prices = (d.prices || []).map(p => [p[0], p[1]]);
+        if (prices.length < 3) return;
+        _chartCache[meta.key] = { ts: Date.now(), prices };
+        if (assetName === activeAsset && tf === activeTimeframe) updateChart(activeAsset, activeAssetPrice);
+    } catch (e) { /* keep synthetic fallback + honest badge */ }
+    finally { delete _inflight[meta.key]; }
+}
+
 // Custom Chart.js Plugin for vertical crosshair line
 const verticalLinePlugin = {
     id: 'verticalLine',
@@ -192,10 +280,14 @@ function updateChart(assetName, price) {
     activeAssetPrice = price;
     chartTitleText.innerHTML = `<i class="fa-solid fa-chart-line"></i> ${assetName}`;
 
-    // Prefer REAL accumulated history for metals (Saatlik/Günlük); otherwise estimated trend.
-    const realSeries = metalNameToCode[assetName] ? getRealMetalSeries(activeTimeframe) : null;
+    // Data-source preference: (1) live real market history (CoinGecko/Frankfurter, all timeframes),
+    // (2) our own accumulated history.json (gold), (3) synthetic trend as an honest fallback.
+    const liveSeries = getLiveSeries(assetName, activeTimeframe, price);
+    const realSeries = liveSeries || (metalNameToCode[assetName] ? getRealMetalSeries(activeTimeframe) : null);
     const { labels, points } = realSeries || generateTimeframeData(price, activeTimeframe);
     setChartSourceBadge(!!realSeries);
+    // Kick off a background fetch/refresh of real history (upgrades the chart when ready).
+    prefetchLiveSeries(assetName, activeTimeframe);
     const ctx = document.getElementById('trend-chart').getContext('2d');
     
     if (trendChartInstance) {
@@ -358,30 +450,71 @@ function renderCurrencyList(items) {
     applySearchFilter();
 }
 
-// 2. Fetch Metals & Bank Spreads from rates.json
+// Re-anchor rates.json metals/banks to the LIVE gold price so figures are never stale.
+// Gram entries are set exactly from the live anchor; the rest are scaled by the same
+// gold move (a far better approximation than multi-day-old data). Pure function.
+function applyLiveGoldToRates(data) {
+    if (!liveGold || !data || !Array.isArray(data.metals) || !data.metals.length) {
+        return { metals: data ? data.metals : [], banks: data ? data.banks : null, live: false };
+    }
+    const num = v => parseFloat(String(v).replace(/[^0-9.-]+/g, ""));
+    const gramEntry = data.metals.find(m => m.code === 'Gram');
+    const base = gramEntry ? num(gramEntry.price) : null;
+    if (!base || base <= 0) return { metals: data.metals, banks: data.banks, live: false };
+
+    const factor = liveGold.gramTRY / base;   // how much gold has moved since rates.json
+    const usd = latestPrices['USD'];
+    const metals = data.metals.map(m => {
+        const p = num(m.price);
+        if (isNaN(p)) return m;
+        let price = p * factor, change = m.change;
+        if (m.code === 'Gram') { price = liveGold.gramTRY; change = liveGold.change ?? m.change; }
+        else if (m.code === 'Fiziki') { price = liveGold.gramTRY * 1.0006; change = liveGold.change ?? m.change; } // small Kapalıçarşı premium
+        else if (m.code === 'Ons/USD') { price = usd ? liveGold.onsTRY / usd : p; change = liveGold.change ?? m.change; }
+        return { ...m, price: price.toFixed(2), change };
+    });
+    let banks = data.banks;
+    if (Array.isArray(banks)) {
+        banks = banks.map(b => ({
+            ...b,
+            buy: (num(b.buy) * factor).toFixed(2),
+            sell: (num(b.sell) * factor).toFixed(2)
+        }));
+    }
+    return { metals, banks, live: true };
+}
+
+// 2. Fetch Metals & Bank Spreads from rates.json, re-anchored to LIVE gold.
 async function fetchMetalsAndBanks() {
     try {
-        const response = await fetch('rates.json');
+        const response = await fetch('rates.json?_t=' + Math.floor(Date.now() / 60000));
         const data = await response.json();
-        
+
         if (data) {
-            if (data.metals) {
-                renderMetalList(data.metals);
+            const view = applyLiveGoldToRates(data);
+            goldIsLive = view.live;
+            if (view.metals) {
+                renderMetalList(view.metals);
             }
-            if (data.banks) {
-                renderBankList(data.banks);
+            if (view.banks) {
+                renderBankList(view.banks);
             } else {
-                // If bank rates are missing in rates.json, auto-generate them dynamically based on physical Gram Gold
-                const physicalGold = data.metals ? parseFloat(data.metals.find(m => m.code === 'Fiziki').price) : 2900;
+                // If bank rates are missing, auto-generate them from the (now live-anchored) Gram Gold.
+                const fiziki = (view.metals || []).find(m => m.code === 'Fiziki') || (view.metals || []).find(m => m.code === 'Gram');
+                const physicalGold = fiziki ? parseFloat(String(fiziki.price).replace(/[^0-9.-]+/g, "")) : (liveGold ? liveGold.gramTRY : 2900);
                 generateFallbackBanks(physicalGold);
             }
-            if (data.last_updated) {
+            if (view.live) {
+                updateTimeText.innerHTML = '<span class="live-dot" aria-hidden="true"></span> Canlı — gram altın anlık güncelleniyor';
+                updateTimeText.title = 'Altın fiyatı canlı piyasa verisiyle (PAXG) anlık hesaplanıyor';
+            } else if (data.last_updated) {
                 const date = new Date(data.last_updated);
                 const rel = window.NobleVision ? NobleVision.relativeTime(date) : date.toLocaleString('tr-TR');
                 updateTimeText.textContent = `Son Güncelleme: ${rel} · Veriler anlık taranmaktadır`;
                 updateTimeText.title = date.toLocaleString('tr-TR');
             }
             renderAnalysis(data.analysis); // "Günün Yorumu" card
+            if (typeof updateConverter === 'function') updateConverter(); // refresh converter with live prices
         }
     } catch (err) {
         console.error("Error fetching metals/banks database: ", err);
@@ -452,11 +585,20 @@ function renderMetalList(items) {
 
 function renderBankList(items) {
     bankList.innerHTML = '';
-    items.forEach(item => {
+    // Find the tightest (cheapest) gold spread so we can crown it — this is ParaAura's
+    // unique, high-intent hook: "hangi banka en ucuz makas?".
+    let bestSpread = Infinity, bestIdx = -1;
+    items.forEach((it, i) => {
+        const b = parseFloat(it.buy.toString().replace(/[^0-9.-]+/g, ""));
+        const s = parseFloat(it.sell.toString().replace(/[^0-9.-]+/g, ""));
+        if (!isNaN(b) && !isNaN(s) && (s - b) < bestSpread) { bestSpread = s - b; bestIdx = i; }
+    });
+    items.forEach((item, idx) => {
         const row = document.createElement('div');
         const isActive = activeAsset === `${item.name} Altın`;
-        row.className = `bank-row${isActive ? ' active' : ''}`;
-        
+        const isBest = idx === bestIdx;
+        row.className = `bank-row${isActive ? ' active' : ''}${isBest ? ' best-spread' : ''}`;
+
         const buyNum = parseFloat(item.buy.toString().replace(/[^0-9.-]+/g, ""));
         const sellNum = parseFloat(item.sell.toString().replace(/[^0-9.-]+/g, ""));
         const spread = (!isNaN(buyNum) && !isNaN(sellNum)) ? (sellNum - buyNum) : null;
@@ -472,11 +614,13 @@ function renderBankList(items) {
             }
         }
         const spreadText = spread !== null ? `Makas: ${formatTRY(spread)}` : 'Gram Altın Makas';
+        const bestBadge = isBest && spread !== null ? `<span class="best-spread-badge" title="Bugün en dar (en avantajlı) altın makası">🏆 En dar makas</span>` : '';
 
         row.innerHTML = `
             <div class="rate-label-group">
                 <span class="rate-name">${item.name}</span>
                 <span class="rate-code">${spreadText}</span>
+                ${bestBadge}
                 ${changeBadge}
             </div>
             <span class="bank-price-buy">${formatTRY(buyNum)}</span>
@@ -524,9 +668,19 @@ function generateFallbackBanks(gramGoldPrice) {
 // 3. Fetch Real-time Cryptos (BTC, ETH, SOL)
 async function fetchCryptos() {
     try {
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=try&include_24hr_change=true');
+        // pax-gold is bundled into the SAME request (no extra API call) to power the live gold anchor.
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,pax-gold&vs_currencies=try&include_24hr_change=true');
         const data = await response.json();
         if (data) {
+            // Extract the live gold anchor (1 PAXG ≈ 1 troy ounce of gold).
+            const pax = data['pax-gold'];
+            if (pax && pax.try) {
+                liveGold = {
+                    onsTRY: pax.try,
+                    gramTRY: pax.try / TROY_OUNCE_G,
+                    change: (typeof pax.try_24h_change === 'number') ? pax.try_24h_change : null
+                };
+            }
             const items = [
                 { name: 'Bitcoin', code: 'BTC/TRY', price: data.bitcoin.try, change: data.bitcoin.try_24h_change },
                 { name: 'Ethereum', code: 'ETH/TRY', price: data.ethereum.try, change: data.ethereum.try_24h_change },
@@ -609,10 +763,12 @@ function applySearchFilter() {
 
 // 10s silent update loop
 async function updateFeeds() {
+    // fetchCryptos also refreshes the live gold anchor (pax-gold), which metals depend on,
+    // so it must resolve before fetchMetalsAndBanks renders.
+    await fetchCryptos();
     await Promise.all([
         fetchCurrencies(),
-        fetchMetalsAndBanks(),
-        fetchCryptos()
+        fetchMetalsAndBanks()
     ]);
     
     // Append real-time tick if 5dk timeframe is selected
@@ -1348,6 +1504,74 @@ function renderAnalysis(text) {
 }
 
 // Initialize application
+// ─── Hızlı Çevirici (instant, shareable converter) ──────────────────────────
+// The single most-searched Turkish finance micro-tool ("dolar/gram altın kaç TL").
+// Reuses the live price map (latestPrices) so results are always current.
+const CONVERTER_ASSETS = [
+    { key: 'TRY',          label: 'Türk Lirası (₺)' },
+    { key: 'Gram Altın',   label: 'Gram Altın' },
+    { key: 'Çeyrek Altın', label: 'Çeyrek Altın' },
+    { key: 'Gümüş Gram',   label: 'Gümüş (gram)' },
+    { key: 'USD',          label: 'Dolar (USD)' },
+    { key: 'EUR',          label: 'Euro (EUR)' },
+    { key: 'BTC',          label: 'Bitcoin (BTC)' },
+    { key: 'ETH',          label: 'Ethereum (ETH)' }
+];
+
+function assetUnitTRY(key) {
+    if (key === 'TRY') return 1;
+    return latestPrices[key] || null;
+}
+
+function convFmt(n, key) {
+    if (key === 'TRY') return formatTRY(n);
+    const unit = { 'Gram Altın':'gr altın','Çeyrek Altın':'çeyrek','Gümüş Gram':'gr gümüş','USD':'$','EUR':'€','BTC':'BTC','ETH':'ETH' }[key] || '';
+    // Gold/silver amounts can be fractional (e.g. 10 TRY ≈ 0,0017 gr) — give them more decimals
+    // so small results don't collapse to 0,00. Crypto needs the most precision.
+    const digits = (key === 'BTC' || key === 'ETH') ? 6 : (key === 'USD' || key === 'EUR') ? 2 : 4;
+    return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: digits }).format(n) + ' ' + unit;
+}
+
+function updateConverter() {
+    const amtEl = document.getElementById('conv-amount');
+    const fromEl = document.getElementById('conv-from');
+    const toEl = document.getElementById('conv-to');
+    const resEl = document.getElementById('conv-result');
+    if (!amtEl || !fromEl || !toEl || !resEl) return;
+    const amount = parseFloat(amtEl.value);
+    const fromTRY = assetUnitTRY(fromEl.value), toTRY = assetUnitTRY(toEl.value);
+    if (isNaN(amount) || !fromTRY || !toTRY) { resEl.textContent = '—'; delete resEl.dataset.share; return; }
+    const result = amount * (fromTRY / toTRY);
+    const fromLabel = (CONVERTER_ASSETS.find(a => a.key === fromEl.value) || {}).label || fromEl.value;
+    resEl.innerHTML = `<strong>${convFmt(result, toEl.value)}</strong>`;
+    resEl.dataset.share = `${new Intl.NumberFormat('tr-TR').format(amount)} ${fromLabel} = ${convFmt(result, toEl.value)} — ParaAura · kuraura.com.tr`;
+}
+
+function initConverter() {
+    const fromEl = document.getElementById('conv-from');
+    const toEl = document.getElementById('conv-to');
+    const amtEl = document.getElementById('conv-amount');
+    const swapEl = document.getElementById('conv-swap');
+    const shareEl = document.getElementById('conv-share');
+    if (!fromEl || !toEl) return;
+    CONVERTER_ASSETS.forEach(a => { fromEl.add(new Option(a.label, a.key)); toEl.add(new Option(a.label, a.key)); });
+    fromEl.value = 'Gram Altın';
+    toEl.value = 'TRY';
+    [amtEl, fromEl, toEl].forEach(el => el && el.addEventListener('input', updateConverter));
+    if (swapEl) swapEl.addEventListener('click', () => {
+        const t = fromEl.value; fromEl.value = toEl.value; toEl.value = t; updateConverter();
+    });
+    if (shareEl) shareEl.addEventListener('click', async () => {
+        const text = document.getElementById('conv-result').dataset.share;
+        if (!text) return;
+        try {
+            if (navigator.share) await navigator.share({ title: 'ParaAura Çevirici', text });
+            else { await navigator.clipboard.writeText(text); if (window.NobleVision) NobleVision.toast('Sonuç kopyalandı 📋', 'up'); }
+        } catch (e) { /* user cancelled */ }
+    });
+    updateConverter();
+}
+
 async function initApp() {
     // Show skeleton placeholders while first data loads (replaced on render).
     ['currency-list', 'metal-list', 'crypto-list', 'bank-list'].forEach(id => {
@@ -1372,6 +1596,7 @@ async function initApp() {
     loadPortfolio();
     loadAlarms();
     renderAlarms();
+    initConverter();
     
     // Portfolio add item listener
     const addBtn = document.getElementById('add-portfolio-item-btn');

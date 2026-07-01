@@ -146,6 +146,20 @@
                     </div>
                 </div>
 
+                <!-- Hızlı Çevirici -->
+                <div class="glass-card converter-card">
+                    <h3 class="section-title"><i class="fa-solid fa-right-left" style="color: var(--accent-gold);"></i> Hızlı Çevirici</h3>
+                    <p class="section-subtitle">Ne kadar eder? Altın, döviz ve kriptoyu anında canlı fiyatla hesapla</p>
+                    <div class="converter-row">
+                        <input type="number" id="conv-amount" value="1" step="any" min="0" aria-label="Miktar" placeholder="Miktar">
+                        <select id="conv-from" aria-label="Kaynak varlık"></select>
+                        <button id="conv-swap" type="button" title="Ters çevir" aria-label="Ters çevir"><i class="fa-solid fa-arrows-rotate"></i></button>
+                        <select id="conv-to" aria-label="Hedef varlık"></select>
+                    </div>
+                    <div class="converter-result" id="conv-result" aria-live="polite">—</div>
+                    <button class="conv-share" id="conv-share" type="button"><i class="fa-solid fa-share-nodes"></i> Sonucu Paylaş</button>
+                </div>
+
                 <!-- Takip Listem (Watchlist) — boşken gizli -->
                 <div class="glass-card watchlist-card" id="watchlist-card" style="display: none;">
                     <div class="watchlist-header">
